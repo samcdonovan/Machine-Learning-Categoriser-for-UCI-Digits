@@ -12,7 +12,7 @@ public class GeneticAlgorithm {
 
 	private final int popSize = 20;
 	private final int geneLength = 2810;
-	private final int generations = 2;
+	private final int generations = 3;
 
 	int[][] population;
 
@@ -24,7 +24,7 @@ public class GeneticAlgorithm {
 	public void run(int[][] dataset1, int[][] dataset2) {
 
 		generateInitialPopulation(dataset1);
-
+		
 		for (int i = 0; i < generations; i++) {
 			printPopAndEval(dataset2);
 			uniformCrossover(dataset2);
@@ -70,14 +70,14 @@ public class GeneticAlgorithm {
 
 		/* fill population with the gene created from the dataset */
 		for (int currentGene = 0; currentGene < popSize; currentGene++)
-			this.population[currentGene] = datasetGene;
-
-		/*population[0] = datasetGene;
+			this.population[currentGene] = datasetGene.clone();
+/*
+		population[0] = datasetGene;
 		
 		for (int currentGene = 1; currentGene < popSize; currentGene++)
-			this.population[currentGene] = datasetGene;
-			//this.population[currentGene] = generateRandomGene();
-		 */
+			//this.population[currentGene] = datasetGene;
+			this.population[currentGene] = generateRandomGene();
+	*/	 
 	}
 
 	/**
@@ -116,38 +116,45 @@ public class GeneticAlgorithm {
 	}
 
 	/**
+	 * Retrieves the two genes in the population with the highest fitness
 	 * 
 	 * @param dataset
 	 * @return
 	 */
 	public int[] findBestGenes(int[][] dataset) {
 		int currentEval;
-		int highest1 = 0, highest2 = 0;
-		int highest1Pos = 0, highest2Pos = 0;
+		int firstHighest = 0, secondHighest = 0;
+		int firstHighestPos = 0, secondHighestPos = 0;
 
-		for (int i = 0; i < population.length; i++) {
-			currentEval = fitness(population[i], dataset);
-			System.out.println(i + " " + currentEval);
+		/* loop through each gene in the population in order 
+		 * to find the two genes with the highest fitnesses */
+		for (int currentGene = 0; currentGene < population.length; currentGene++) {
+			
+			/* get fitness for the current gene */
+			currentEval = fitness(population[currentGene], dataset);
+			System.out.println(currentGene + " : " + currentEval);
 
-			if (currentEval > highest1) {
-				highest2 = highest1;
-				highest2Pos = highest1Pos;
+			if (currentEval > firstHighest) {
+				secondHighest = firstHighest;
+				secondHighestPos = firstHighestPos;
 
-				highest1 = currentEval;
-				highest1Pos = i;
-			} else if (currentEval >= highest2) {
-				highest2 = currentEval;
-				highest2Pos = i;
+				firstHighest = currentEval;
+				firstHighestPos = currentGene;
+			} else if (currentEval >= secondHighest) {
+				secondHighest = currentEval;
+				secondHighestPos = currentGene;
 			}
 
 		}
 
-		int[] highestArr = { highest1Pos, highest2Pos };
-		System.out.println("Best: " + highest1Pos + " " + highest2Pos);
+		/* return an array containing the positions of the two best genes in the population */
+		int[] highestArr = { firstHighestPos, secondHighestPos };
+		System.out.println("Best: " + firstHighestPos + " " + secondHighestPos);
 		return highestArr;
 	}
 
 	/**
+	 *
 	 * 
 	 * @param dataset
 	 */
@@ -161,7 +168,8 @@ public class GeneticAlgorithm {
 		int[] newGene = gene1;
 
 		for (int newGenePos = 0; newGenePos < popSize; newGenePos++) {
-			newGene = gene1;
+		
+			newGene = gene1.clone();
 
 			for (int pos = 0; pos < gene1.length; pos++) {
 
@@ -178,21 +186,26 @@ public class GeneticAlgorithm {
 				}
 			}
 
-			this.population[newGenePos] = newGene.clone();
+			population[newGenePos] = newGene.clone();
 
 		}
+		//print2D(population);
 	}
 
 	/**
+	 * Gene mutation function, 1.5% chance to change current bit 
+	 * in the gene to a random category (0-9)
 	 * 
-	 * @param geneBit
-	 * @return
+	 * @param geneBit (int), the gene bit to perform mutation on
+	 * @return (int) the gene bit that is either mutated or unchanged
 	 */
 	public int mutate(int geneBit) {
 
 		double mutationRate = 1.5;
 		double rand = Math.random() * 100;
 
+		/* if the random number is less than or equal to the mutation rate,
+		 * the gene bit is mutated */
 		if (mutationRate >= rand)
 			geneBit = (int) (Math.random() * 10);
 

@@ -22,14 +22,14 @@ public class Euclidean {
 		/* get total dataset size; both datasets combined */
 		int fullDatasetSize = dataset1.length + dataset2.length;
 
-		/* use both datsets to run a 2-fold test, returning the 
+		/* use both datasets to run a 2-fold test, returning the 
 		 * total number of correct categorisations from both folds */
 		int totalCorrect = Euclidean.categorise(dataset1, dataset2) + Euclidean.categorise(dataset2, dataset1);
 
-		/* check that datset is not empty */
+		/* check that dataset is not empty */
 		if (dataset1.length > 0 && dataset2.length > 0) {
 
-			/* print the correct total and the caalculated percentage of correct categorisations */
+			/* print the correct total and the calculated percentage of correct categorisations */
 			System.out.println("Total correct: " + totalCorrect + "/" + fullDatasetSize + " = "
 					+ (((double) totalCorrect / (double) fullDatasetSize) * 100) + "%");
 		}
