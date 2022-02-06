@@ -1,85 +1,101 @@
 import java.util.List;
 
+/**
+ * Euclidean.java
+ * 
+ * @author Samuel C. Donovan
+ * Created: 17/01/22
+ * Updated: 06/02/22
+ * 
+ * Nearest neighbour (using Euclidean distance) solution 
+ * to the UCI digits task. Achieves ~98.3% accuracy
+ */
 public class Euclidean {
 
-	public static int categorise2(List<int[]> dataset1, List<int[]> dataset2) {
-		double min = Float.MAX_VALUE;
-		double currentDist;
-		int minPos = 0;
-		int numCorrect = 0;
-		int dataset1Size = dataset1.size();
-		int dataset2Size = dataset2.size();
-		int lastIndex = dataset1.get(0).length - 1;
+	/**
+	 * Main function that runs the Euclidean categoriser and prints the 
+	 * total number of correct categorisations, as well as how accurate it was (as a percentage)
+	 * 
+	 * @param dataset1 the first dataset
+	 * @param dataset2 the second dataset
+	 */
+	public static void run(List<int[]> dataset1, List<int[]> dataset2) {
+		/* get total dataset size; both datasets combined */
+		int fullDatasetSize = dataset1.size() + dataset2.size();
 
-		for (int pos = 0; pos < dataset1Size; pos++) {
+		/* use both datsets to run a 2-fold test, returning the 
+		 * total number of correct categorisations from both folds */
+		int totalCorrect = Euclidean.categorise(dataset1, dataset2) + Euclidean.categorise(dataset2, dataset1);
 
-			min = Float.MAX_VALUE;
+		/* check that datset is not empty */
+		if (dataset1.size() > 0 && dataset2.size() > 0) {
 
-			for (int pos2 = 0; pos2 < dataset2Size; pos2++) {
+			/* print the correct total and the caalculated percentage of correct categorisations */
+			System.out.println("Total correct: " + totalCorrect + "/" + fullDatasetSize + " = "
+					+ (((double) totalCorrect / (double) fullDatasetSize) * 100) + "%");
+		}
+	}
 
-				currentDist = euclidean(dataset1.get(pos), dataset2.get(pos2));
+	/**
+	 * Main categorisation function; uses Euclidean distance to 
+	 * calculate the nearest row in the other dataset
+	 * 
+	 * @param dataset1 list containing the data from one of the datsets
+	 * @param dataset2 list containing the data from the other datasets
+	 * @return int; number of correct categorisations
+	 */
+	public static int categorise(List<int[]> dataset1, List<int[]> dataset2) {
 
+		double min = Float.MAX_VALUE; /* current minimum distance, initialised to INF */
+		double currentDist; /* current distance to compare to min */
+		int minPos = 0; /* position of current min distance neighbour */
+		int numCorrect = 0; /* total number of correct categorisations */
+
+		int lastIndex = dataset1.get(0).length - 1; /* last index of each row (65) */
+
+		/* loop through each row in dataset1 to get its nearest neighbour in dataset2 */
+		for (int dataset1Pos = 0; dataset1Pos < dataset1.size(); dataset1Pos++) {
+
+			/* reset min to INF before each loop of the second dataset */
+			min = Float.MAX_VALUE; 
+
+			/* loop through the dateset2, comparing the distance to each row and
+			 * retrieving the nearest neighbour to the current row from dataset1 */
+			for (int dataset2Pos = 0; dataset2Pos < dataset2.size(); dataset2Pos++) {
+
+				currentDist = euclideanDistance(dataset1.get(dataset1Pos), dataset2.get(dataset2Pos));
+
+				/* if the distance between the two rows from each dataset is smaller than the current
+				 * minimum distance, set minimum distance to this new distance and save the position in minPos*/
 				if (currentDist < min) {
 					min = currentDist;
-					minPos = pos2;
+					minPos = dataset2Pos;
 				}
 			}
 
-			System.out.println(pos + " : " + dataset1.get(pos)[lastIndex] + ", closest = " + minPos + " : "
-					+ dataset2.get(minPos)[lastIndex]);
-
-			if (dataset1.get(pos)[lastIndex] == dataset2.get(minPos)[lastIndex])
+			/* if the nearest neighbour both have the same category in their last cell (65)
+			 * the categorisation is correct, numCorrect is incremented by 1 */
+			if (dataset1.get(dataset1Pos)[lastIndex] == dataset2.get(minPos)[lastIndex])
 				numCorrect++;
 		}
 
 		return numCorrect;
 	}
 
-	public static int categorise(int current, List<int[]> dataset) {
-		double min = Float.MAX_VALUE;
-		double currentDist;
-		int minPos = 0;
-		int numCorrect = 0;
-		int datasetSize = dataset.size();
-		int lastIndex = dataset.get(0).length - 1;
-
-		for (int pos = current * 10; pos < (current * 10) + 10 && pos < datasetSize; pos++) {
-
-			min = Float.MAX_VALUE;
-
-			for (int pos2 = 0; pos2 < datasetSize; pos2++) {
-
-				if (current * 10 == pos2) {
-					pos2 += 10;
-
-					if (pos2 >= datasetSize - 1)
-						continue;
-				}
-
-				currentDist = euclidean(dataset.get(pos), dataset.get(pos2));
-
-				if (currentDist < min) {
-					min = currentDist;
-					minPos = pos2;
-				}
-			}
-
-			System.out.println(pos + " : " + dataset.get(pos)[lastIndex] + ", closest = " + minPos + " : "
-					+ dataset.get(minPos)[lastIndex]);
-
-			if (dataset.get(pos)[lastIndex] == dataset.get(minPos)[lastIndex])
-				numCorrect++;
-		}
-
-		return numCorrect;
-	}
-
-	public static double euclidean(int[] digit1, int[] digit2) {
+	/**
+	 * Euclidean distance calculator, calculates distance
+	 * between two rows of data from the dataset 
+	 * @param row1, int array representing a row in the dataset
+	 * @param row2, int array representing another row in the dataset
+	 * @return double, the Euclidean distance between each row
+	 */
+	public static double euclideanDistance(int[] row1, int[] row2) {
 
 		int sum = 0;
 
-		for (int pos = 0; pos < digit1.length - 1; pos++)
-			sum += ((digit1[pos] - digit2[pos]) * (digit1[pos] - digit2[pos]));
+		/* sums the distance between each point in both arrays */
+		for (int pos = 0; pos < row1.length - 1; pos++)
+			sum += ((row1[pos] - row2[pos]) * (row1[pos] - row2[pos]));
 
 		return Math.sqrt(sum);
 	}
