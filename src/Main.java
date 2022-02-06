@@ -3,8 +3,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Main.java
@@ -14,7 +12,7 @@ import java.util.List;
  * Updated: 06/02/22
  * 
  * INSTRUCTIONS:
-*/
+ */
 public class Main {
 
 	public static void main(String[] args) {
@@ -26,6 +24,7 @@ public class Main {
 		String dataFile2 = System.getProperty("user.dir") + File.separator + "data" + File.separator
 				+ "cw2DataSet2.csv";
 		System.out.println("Loading from " + dataFile2);
+		
 		int[][] dataset1 = readFile(dataFile1);
 		int[][] dataset2 = readFile(dataFile2);
 		
@@ -35,13 +34,15 @@ public class Main {
 		
 		System.out.println("\nGenetic Algorithm: ");
 		System.out.println("-------------------");
-
+		GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
+		geneticAlgorithm.run(dataset1, dataset2);
 	}
 
 	/**
 	 * Reads data from file path and puts it into an ArrayList
-	 * @param filePath, String containing the file path for the data
-	 * @return ArrayList containing the rows of data from the dataset
+	 * 
+	 * @param filePath (String), the file path for the data
+	 * @return (int[][]) rows of data from the dataset
 	 */
 	public static int[][] readFile(String filePath) {
 		File file = new File(filePath); /* create file object to use a scanner on */
@@ -51,7 +52,7 @@ public class Main {
 		int[] rowOfData = new int[65]; /* there are 65 data points in each row */
 
 		int lineCount = 0; 
-		int[][] tempDataset, dataset = new int[lineCount][];
+		int[][] dataset = new int[lineCount][];
 		
 		try {
 
@@ -90,9 +91,9 @@ public class Main {
 	/**
 	 * Helper function to increase array size by one, copying all elements to the new array
 	 * 
-	 * @param originalArray int[][] 2D array to be copied
-	 * @param newSize the new size of the array
-	 * @return array with new size containing all previous elements
+	 * @param originalArray (int[][]), 2D array to be copied
+	 * @param newSize (int), the new size of the array
+	 * @return (int[][]), array with new size containing all previous elements
 	 */
 	public static int[][] copyArray(int[][] originalArray, int newSize){
 		

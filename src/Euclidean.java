@@ -1,4 +1,3 @@
-import java.util.List;
 
 /**
  * Euclidean.java
@@ -16,8 +15,8 @@ public class Euclidean {
 	 * Main function that runs the Euclidean categoriser and prints the 
 	 * total number of correct categorisations, as well as how accurate it was (as a percentage)
 	 * 
-	 * @param dataset1 the first dataset
-	 * @param dataset2 the second dataset
+	 * @param dataset1 (int[][]), the first dataset
+	 * @param dataset2 (int[][]), the second dataset
 	 */
 	public static void run(int[][] dataset1, int[][] dataset2) {
 		/* get total dataset size; both datasets combined */
@@ -40,9 +39,9 @@ public class Euclidean {
 	 * Main categorisation function; uses Euclidean distance to 
 	 * calculate the nearest row in the other dataset
 	 * 
-	 * @param dataset1 list containing the data from one of the datsets
-	 * @param dataset2 list containing the data from the other datasets
-	 * @return int; number of correct categorisations
+	 * @param dataset1 (int[][]), data from one of the datasets
+	 * @param dataset2 (int[][]), data from the other dataset
+	 * @return (int), number of correct categorisations
 	 */
 	public static int categorise(int[][] dataset1, int[][] dataset2) {
 
@@ -85,9 +84,10 @@ public class Euclidean {
 	/**
 	 * Euclidean distance calculator, calculates distance
 	 * between two rows of data from the dataset 
-	 * @param row1, int array representing a row in the dataset
-	 * @param row2, int array representing another row in the dataset
-	 * @return double, the Euclidean distance between each row
+	 * 
+	 * @param row1 (int[]), array representing a row in the dataset
+	 * @param row2 (int[]), array representing another row in the dataset
+	 * @return (double), the Euclidean distance between each row
 	 */
 	public static double euclideanDistance(int[] row1, int[] row2) {
 
