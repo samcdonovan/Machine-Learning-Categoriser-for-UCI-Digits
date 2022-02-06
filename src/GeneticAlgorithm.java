@@ -15,12 +15,16 @@ public class GeneticAlgorithm {
 	private final int generations = 2;
 
 	int[][] population;
-	
 
+	/**
+	 * 
+	 * @param dataset1
+	 * @param dataset2
+	 */
 	public void run(int[][] dataset1, int[][] dataset2) {
 
 		generateInitialPopulation(dataset1);
-		
+
 		for (int i = 0; i < generations; i++) {
 			printPopAndEval(dataset2);
 			uniformCrossover(dataset2);
@@ -40,7 +44,7 @@ public class GeneticAlgorithm {
 	public int[] generateRandomGene() {
 
 		int[] gene = new int[geneLength];
-	
+
 		for (int genePos = 0; genePos < geneLength; genePos++)
 			gene[genePos] = (int) (Math.random() * 10);
 
@@ -53,21 +57,21 @@ public class GeneticAlgorithm {
 	 * 
 	 * @param dataset (int[][]), current dataset for 2-fold test
 	 */
-	public void generateInitialPopulation(int[][] dataset) {	
-		
+	public void generateInitialPopulation(int[][] dataset) {
+
 		int[] datasetGene = new int[geneLength];
-		
+
 		/* create a gene from the categories of each row in the current dataset */
 		for (int row = 0; row < datasetGene.length; row++)
 			datasetGene[row] = dataset[row][dataset[row].length - 1];
-		
+
 		/* set the class variable "population" to a new 2D array */
 		this.population = new int[popSize][geneLength];
-		
+
 		/* fill population with the gene created from the dataset */
 		for (int currentGene = 0; currentGene < popSize; currentGene++)
 			this.population[currentGene] = datasetGene;
-		
+
 		/*population[0] = datasetGene;
 		
 		for (int currentGene = 1; currentGene < popSize; currentGene++)
@@ -111,6 +115,11 @@ public class GeneticAlgorithm {
 		}
 	}
 
+	/**
+	 * 
+	 * @param dataset
+	 * @return
+	 */
 	public int[] findBestGenes(int[][] dataset) {
 		int currentEval;
 		int highest1 = 0, highest2 = 0;
@@ -119,11 +128,11 @@ public class GeneticAlgorithm {
 		for (int i = 0; i < population.length; i++) {
 			currentEval = fitness(population[i], dataset);
 			System.out.println(i + " " + currentEval);
-			
+
 			if (currentEval > highest1) {
 				highest2 = highest1;
 				highest2Pos = highest1Pos;
-				
+
 				highest1 = currentEval;
 				highest1Pos = i;
 			} else if (currentEval >= highest2) {
@@ -138,6 +147,10 @@ public class GeneticAlgorithm {
 		return highestArr;
 	}
 
+	/**
+	 * 
+	 * @param dataset
+	 */
 	public void uniformCrossover(int[][] dataset) {
 		double crossoverChance = 50.0;
 		double randomChance = Math.random();
@@ -170,6 +183,11 @@ public class GeneticAlgorithm {
 		}
 	}
 
+	/**
+	 * 
+	 * @param geneBit
+	 * @return
+	 */
 	public int mutate(int geneBit) {
 
 		double mutationRate = 1.5;
