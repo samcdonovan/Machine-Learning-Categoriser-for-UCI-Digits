@@ -19,16 +19,16 @@ public class Euclidean {
 	 * @param dataset1 the first dataset
 	 * @param dataset2 the second dataset
 	 */
-	public static void run(List<int[]> dataset1, List<int[]> dataset2) {
+	public static void run(int[][] dataset1, int[][] dataset2) {
 		/* get total dataset size; both datasets combined */
-		int fullDatasetSize = dataset1.size() + dataset2.size();
+		int fullDatasetSize = dataset1.length + dataset2.length;
 
 		/* use both datsets to run a 2-fold test, returning the 
 		 * total number of correct categorisations from both folds */
 		int totalCorrect = Euclidean.categorise(dataset1, dataset2) + Euclidean.categorise(dataset2, dataset1);
 
 		/* check that datset is not empty */
-		if (dataset1.size() > 0 && dataset2.size() > 0) {
+		if (dataset1.length > 0 && dataset2.length > 0) {
 
 			/* print the correct total and the caalculated percentage of correct categorisations */
 			System.out.println("Total correct: " + totalCorrect + "/" + fullDatasetSize + " = "
@@ -44,26 +44,26 @@ public class Euclidean {
 	 * @param dataset2 list containing the data from the other datasets
 	 * @return int; number of correct categorisations
 	 */
-	public static int categorise(List<int[]> dataset1, List<int[]> dataset2) {
+	public static int categorise(int[][] dataset1, int[][] dataset2) {
 
 		double min = Float.MAX_VALUE; /* current minimum distance, initialised to INF */
 		double currentDist; /* current distance to compare to min */
 		int minPos = 0; /* position of current min distance neighbour */
 		int numCorrect = 0; /* total number of correct categorisations */
 
-		int lastIndex = dataset1.get(0).length - 1; /* last index of each row (65) */
+		int lastIndex = dataset1[0].length - 1; /* last index of each row (65) */
 
 		/* loop through each row in dataset1 to get its nearest neighbour in dataset2 */
-		for (int dataset1Pos = 0; dataset1Pos < dataset1.size(); dataset1Pos++) {
+		for (int dataset1Pos = 0; dataset1Pos < dataset1.length; dataset1Pos++) {
 
 			/* reset min to INF before each loop of the second dataset */
 			min = Float.MAX_VALUE; 
 
 			/* loop through the dateset2, comparing the distance to each row and
 			 * retrieving the nearest neighbour to the current row from dataset1 */
-			for (int dataset2Pos = 0; dataset2Pos < dataset2.size(); dataset2Pos++) {
+			for (int dataset2Pos = 0; dataset2Pos < dataset2.length; dataset2Pos++) {
 
-				currentDist = euclideanDistance(dataset1.get(dataset1Pos), dataset2.get(dataset2Pos));
+				currentDist = euclideanDistance(dataset1[dataset1Pos], dataset2[dataset2Pos]);
 
 				/* if the distance between the two rows from each dataset is smaller than the current
 				 * minimum distance, set minimum distance to this new distance and save the position in minPos*/
@@ -75,7 +75,7 @@ public class Euclidean {
 
 			/* if the nearest neighbour both have the same category in their last cell (65)
 			 * the categorisation is correct, numCorrect is incremented by 1 */
-			if (dataset1.get(dataset1Pos)[lastIndex] == dataset2.get(minPos)[lastIndex])
+			if (dataset1[dataset1Pos][lastIndex] == dataset2[minPos][lastIndex])
 				numCorrect++;
 		}
 
