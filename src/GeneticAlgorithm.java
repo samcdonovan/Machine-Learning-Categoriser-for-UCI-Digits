@@ -6,7 +6,7 @@
  * Created: 31/01/22
  * Updated: 06/02/22
  *
- * 
+ *  
  */
 public class GeneticAlgorithm {
 
@@ -14,7 +14,7 @@ public class GeneticAlgorithm {
 	private final int populationSize = 40;
 	private final int geneLength = 640;
 	private final int generations = 300;
-	private final double mutationRate = 1.5;
+	private final double mutationRate = 2;
 
 	/**
 	 * Function that runs the genetic algorithm with a 2-fold test
@@ -266,6 +266,127 @@ public class GeneticAlgorithm {
 
 	}
 
+
+	public void twoPointCrossover(int[][] dataset) {
+		// int[] bestGenes = findBestGenes(dataset);
+
+		double ratio = ((int) (Math.random() * 10)) / 10;
+		// System.out.println(ratio);
+		int crossPoint1 = (int) (ratio * geneLength);
+		ratio = ((int) (Math.random() * 10)) / 10.0;
+		int crossPoint2 = (int) (crossPoint1 + (ratio * (geneLength - crossPoint1)));
+		int[] bestGenes = findBestGenes(dataset);
+		int[] gene1 = population[bestGenes[0]], gene2 = population[bestGenes[1]];
+		// System.out.println(crossPoint1 + " " + crossPoint2);
+
+		int[] tempGene1 = new int[geneLength], tempGene2 = new int[geneLength];
+
+		for (int newGenePos = 0; newGenePos < populationSize; newGenePos++) {
+			tempGene1 = new int[geneLength];
+			tempGene2 = new int[geneLength];
+			ratio = ((int) (Math.random() * 10)) / 10;
+			crossPoint1 = (int) (ratio * geneLength);
+			ratio = ((int) (Math.random() * 10)) / 10;
+			crossPoint2 = (int) (crossPoint1 + (ratio * (geneLength - crossPoint1)));
+			for (int i = 0; i < crossPoint1; i++) {
+				tempGene1[i] = gene1[i];
+				tempGene2[i] = gene2[i];
+			}
+			for (int i = crossPoint1; i < crossPoint2; i++) {
+				tempGene1[i] = gene2[i];
+				tempGene2[i] = gene1[i];
+			}
+
+			for (int i = crossPoint2; i < geneLength; i++) {
+				tempGene1[i] = gene1[i];
+				tempGene2[i] = gene2[i];
+			}
+
+			mutate(tempGene1);
+			mutate(tempGene2);
+
+			population[newGenePos] = tempGene1;
+			population[++newGenePos] = tempGene2;
+		}
+	}
+
+	/**
+	 * Uniform crossover function; for each category in the gene, there
+	 * is a 50% chance for it to crossover. If the category already matches
+	 * the category in the dataset, it does not crossover.
+	 * 
+	 * @param dataset (int[][]), current dataset that is being trained
+	 */
+	public void multiPointCrossover(int[][] dataset) {
+	
+		int numCrossPoints;
+
+		int maxCross;
+
+		int crossSize;
+	
+		int crossPoint;
+
+		int[] bestGenes = findBestGenes(dataset);
+		int[] gene1 = population[bestGenes[0]], gene2 = population[bestGenes[1]];
+		
+		int[] tempGene1 = new int[geneLength], tempGene2 = new int[geneLength];
+		int[] sections;
+		for (int newGenePos = 0; newGenePos < populationSize; newGenePos++) {
+			tempGene1 = new int[geneLength];
+			tempGene2 = new int[geneLength];
+			numCrossPoints = (int) (Math.random() * 63) + 1;
+			maxCross = (int) (geneLength / numCrossPoints);
+	
+			sections = new int[numCrossPoints];
+			for(int i = 0; i < numCrossPoints; i++){
+				sections[i] = i * maxCross;
+			}
+			
+			for(int section : sections){
+			
+			
+
+				crossSize = (int) (Math.random() * maxCross - 1) + 1;
+			
+				crossPoint = section + ((int) (Math.random() * (((section + maxCross - crossSize) - section) + 1)));
+			
+				
+				for(int j = section; j < crossPoint; j++){
+				
+			
+					tempGene1[j] = gene1[j];
+					tempGene2[j] = gene2[j];
+	
+				}
+				
+				for (int j = crossPoint; j < crossPoint + crossSize; j++) {
+				
+		
+					tempGene1[j] = gene2[j];
+					tempGene2[j] = gene1[j];
+			
+				}
+				
+				for(int j = crossPoint + crossSize; j < section + maxCross; j++){
+				
+				
+					tempGene1[j] = gene1[j];
+					tempGene2[j] = gene2[j];
+				
+				}
+			}
+			
+			mutate(tempGene1);
+			mutate(tempGene2);
+			
+			population[newGenePos] = tempGene1.clone();
+			population[++newGenePos] = tempGene2.clone();
+		
+		}
+	
+	}
+
 	/**
 	 * Gene mutation function, 1.5% chance to change current bit 
 	 * in the gene to a random category (0-9)
@@ -283,6 +404,20 @@ public class GeneticAlgorithm {
 			geneBit = (int) (Math.random() * 17);
 
 		return geneBit;
+	}
+
+	public void mutate(int[] gene) {
+
+		double mutationRate = 1.5;
+		double rand;
+
+		for (int pos = 0; pos < gene.length; pos++) {
+
+			rand = Math.random() * 100;
+
+			if (mutationRate >= rand)
+				gene[pos] = (int) (Math.random() * 10);
+		}
 	}
 
 }
