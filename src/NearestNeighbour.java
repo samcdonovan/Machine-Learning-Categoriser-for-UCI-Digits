@@ -1,6 +1,6 @@
 
 /**
- * Euclidean.java
+ * NearestNeighbour.java
  * 
  * @author Samuel C. Donovan
  * Created: 17/01/22
@@ -12,7 +12,7 @@
 public class Euclidean {
 
 	/**
-	 * Main function that runs the Euclidean categoriser and prints the 
+	 * Main function that runs the Nearest Neighbour categoriser and prints the 
 	 * total number of correct categorisations, as well as how accurate it was (as a percentage)
 	 * 
 	 * @param dataset1, the first dataset
