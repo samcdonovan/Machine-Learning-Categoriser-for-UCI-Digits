@@ -15,8 +15,8 @@ public class Euclidean {
 	 * Main function that runs the Euclidean categoriser and prints the 
 	 * total number of correct categorisations, as well as how accurate it was (as a percentage)
 	 * 
-	 * @param dataset1 (int[][]), the first dataset
-	 * @param dataset2 (int[][]), the second dataset
+	 * @param dataset1, the first dataset
+	 * @param dataset2, the second dataset
 	 */
 	public static void run(int[][] dataset1, int[][] dataset2) {
 		/* get total dataset size; both datasets combined */
@@ -26,12 +26,15 @@ public class Euclidean {
 		 * total number of correct categorisations from both folds */
 		int totalCorrect = Euclidean.categorise(dataset1, dataset2) + Euclidean.categorise(dataset2, dataset1);
 
+		double percentageCorrect;
+
 		/* check that dataset is not empty */
 		if (dataset1.length > 0 && dataset2.length > 0) {
+			percentageCorrect = ((double) totalCorrect / (double) fullDatasetSize) * 100;
 
 			/* print the correct total and the calculated percentage of correct categorisations */
 			System.out.println("Total correct: " + totalCorrect + "/" + fullDatasetSize + " = "
-					+ (((double) totalCorrect / (double) fullDatasetSize) * 100) + "%");
+					+ Math.round(percentageCorrect * 10.0) / 10.0 + "% (" + percentageCorrect + "%)");
 		}
 	}
 
@@ -39,9 +42,9 @@ public class Euclidean {
 	 * Main categorisation function; uses Euclidean distance to 
 	 * calculate the nearest row in the other dataset
 	 * 
-	 * @param dataset1 (int[][]), data from one of the datasets
-	 * @param dataset2 (int[][]), data from the other dataset
-	 * @return (int), number of correct categorisations
+	 * @param dataset1, data from one of the datasets
+	 * @param dataset2, data from the other dataset
+	 * @return number of correct categorisations
 	 */
 	public static int categorise(int[][] dataset1, int[][] dataset2) {
 
@@ -56,7 +59,7 @@ public class Euclidean {
 		for (int dataset1Pos = 0; dataset1Pos < dataset1.length; dataset1Pos++) {
 
 			/* reset min to INF before each loop of the second dataset */
-			min = Float.MAX_VALUE; 
+			min = Float.MAX_VALUE;
 
 			/* loop through the dateset2, comparing the distance to each row and
 			 * retrieving the nearest neighbour to the current row from dataset1 */
@@ -85,17 +88,17 @@ public class Euclidean {
 	 * Euclidean distance calculator, calculates distance
 	 * between two rows of data from the dataset 
 	 * 
-	 * @param row1 (int[]), array representing a row in the dataset
-	 * @param row2 (int[]), array representing another row in the dataset
-	 * @return (double), the Euclidean distance between each row
+	 * @param trainRow, array representing a row in the training set
+	 * @param testRow, array representing a row in the test set
+	 * @return the Euclidean distance between each row
 	 */
-	public static double euclideanDistance(int[] row1, int[] row2) {
+	public static double euclideanDistance(int[] trainRow, int[] testRow) {
 
 		int sum = 0;
 
 		/* sums the distance between each point in both arrays */
-		for (int pos = 0; pos < row1.length - 1; pos++)
-			sum += ((row1[pos] - row2[pos]) * (row1[pos] - row2[pos]));
+		for (int pos = 0; pos < trainRow.length - 1; pos++)
+			sum += ((trainRow[pos] - testRow[pos]) * (trainRow[pos] - testRow[pos]));
 
 		return Math.sqrt(sum);
 	}
