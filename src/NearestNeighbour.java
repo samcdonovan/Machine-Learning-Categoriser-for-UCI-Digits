@@ -9,7 +9,7 @@
  * Nearest neighbour (using Euclidean distance) solution 
  * to the UCI digits task. Achieves ~98.3% accuracy
  */
-public class Euclidean {
+public class NearestNeighbour {
 
 	/**
 	 * Main function that runs the Nearest Neighbour categoriser and prints the 
@@ -24,7 +24,7 @@ public class Euclidean {
 
 		/* use both datasets to run a 2-fold test, returning the 
 		 * total number of correct categorisations from both folds */
-		int totalCorrect = Euclidean.categorise(dataset1, dataset2) + Euclidean.categorise(dataset2, dataset1);
+		int totalCorrect = NearestNeighbour.categorise(dataset1, dataset2) + NearestNeighbour.categorise(dataset2, dataset1);
 
 		double percentageCorrect;
 

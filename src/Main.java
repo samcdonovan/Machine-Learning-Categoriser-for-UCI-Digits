@@ -27,11 +27,11 @@ public class Main {
 
 		int[][] dataset1 = readFile(dataFile1);
 		int[][] dataset2 = readFile(dataFile2);
-		/*
+		
 		System.out.println("\nNearest neighbour (Euclidean): ");
 		System.out.println("-------------------");
-		Euclidean.run(dataset1, dataset2);
-	*/	
+		NearestNeighbour.run(dataset1, dataset2);
+	/*
 		System.out.println("\nGenetic Algorithm: ");
 		System.out.println("-------------------");
 		GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
