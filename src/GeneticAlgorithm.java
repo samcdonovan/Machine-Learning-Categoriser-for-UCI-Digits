@@ -21,9 +21,6 @@ public class GeneticAlgorithm {
 	int[][] population = new int[POPULATION_SIZE][GENE_LENGTH]; /* 2D array that holds the current population */
 	int[][] tempPopulation = new int[POPULATION_SIZE][GENE_LENGTH]; /* 2D array created from gene selection techniques */
 
-	int[][] trainSet;
-	int[][] testSet;
-
 	/**
 	 * Function that runs the genetic algorithm with a 2-fold test
 	 * 
@@ -32,50 +29,34 @@ public class GeneticAlgorithm {
 	 */
 	public void run(int[][] dataset1, int[][] dataset2) {
 
-		double percentageCorrect = 0.0;
+		/* generate an initial population using dataset1 */
+		generateNewPopulation();
 
-		while (percentageCorrect < 64.0) {
-			/* generate an initial population using dataset1 */
-			generateNewPopulation();
-
-			for (int i = 0; i < GENERATIONS; i++) {
-				bestGeneSelection(dataset1);
-				// twoPointCrossover();
-				uniformCrossover();
-
-			}
-
-			int firstFoldTotal = testPopulation(dataset2);
-			System.out.println("Training set: cw2DataSet1.csv, test set: cw2DataSet2.csv");
-			System.out.println("Correct categorisations = " + firstFoldTotal + "/" + dataset2.length + "\n");
-
-			/* generate an initial population using dataset1 */
-			generateNewPopulation();
-
-			/* run the genetic algorithm for the specified number of generations */
-			for (int i = 0; i < GENERATIONS; i++) {
-				bestGeneSelection(dataset2);
-				// uniformCrossover(tempPopulation);
-				twoPointCrossover();
-
-				uniformCrossover();
-				// multiPointCrossover();
-				// uniformCrossover(dataset2);
-				// bestGeneSelection(dataset2);
-				// tournamentSelection(dataset2);
-			}
-
-			int secondFoldTotal = testPopulation(dataset1);
-			System.out.println("Training set: cw2DataSet2.csv, test set: cw2DataSet1.csv");
-			System.out.println("Correct categorisations = " + secondFoldTotal + "/" + dataset1.length);
-
-			int totalCorrect = firstFoldTotal + secondFoldTotal;
-
-			percentageCorrect = ((double) totalCorrect / (double) (dataset1.length + dataset2.length)) * 100;
-
-			System.out.println("\nTotal correct: " + totalCorrect + "/" + (dataset1.length + dataset2.length) + " = "
-					+ Math.round(percentageCorrect * 10.0) / 10.0 + "% (" + percentageCorrect + "%)");
+		for (int generation = 0; generation < GENERATIONS; generation++) {
+			bestGeneSelection(dataset1);
+			uniformCrossover();
 		}
+
+		/* get the total number of correct categorisations from the first fold */
+		int firstFoldTotal = testPopulation(dataset2);
+
+		/* generate an initial population using dataset1 */
+		generateNewPopulation();
+
+		/* run the genetic algorithm for the specified number of generations */
+		for (int generation = 0; generation < GENERATIONS; generation++) {
+			bestGeneSelection(dataset2);
+			uniformCrossover();
+		}
+
+		/* get the total number of correct categorisations from the second fold */
+		int secondFoldTotal = testPopulation(dataset1);
+
+		/* print the total number of correct categorisations and its percentage (the full percentage and to 2 d.p.) */
+		int totalCorrect = firstFoldTotal + secondFoldTotal;
+		double percentageCorrect = ((double) totalCorrect / (double) (dataset1.length + dataset2.length)) * 100;
+		System.out.println("\nTotal correct: " + totalCorrect + "/" + (dataset1.length + dataset2.length) + " = "
+				+ Math.round(percentageCorrect * 10.0) / 10.0 + "% (" + percentageCorrect + "%)");
 	}
 
 	/**
@@ -98,30 +79,6 @@ public class GeneticAlgorithm {
 			/* set position in population to the newly created gene */
 			population[currentGene] = gene;
 		}
-	}
-
-	/**
-	 * Helper function for fitness evaluation. Creates a temporary row from the current gene
-	 * so that it can be evaluated against each row in the dataset
-	 * 
-	 * @param gene, the gene to create a row from
-	 * @param category, the current category of the row from the gene (0-9)
-	 * @return a temporary row that can be compared against the dataset
-	 */
-	public int[] getRow(int[] gene, int category) {
-		int rowLength = 64; /* length of each row in the dataset, without the category */
-		int[] row = new int[rowLength];
-
-		/* every 64 elements in the gene represents a different category, so we multiply
-		 * the category by the row length to get the index of the current section 
-		 * (e.g. if the category is 2, the first element in the section will be at position 128) */
-		int currentSection = category * rowLength;
-
-		/* loop through each element in the current section of the gene and add it to the temporary row */
-		for (int genePos = currentSection, rowPos = 0; genePos < currentSection + rowLength; genePos++, rowPos++)
-			row[rowPos] = gene[genePos];
-
-		return row;
 	}
 
 	/**
@@ -191,6 +148,30 @@ public class GeneticAlgorithm {
 	}
 
 	/**
+	 * Helper function for fitness evaluation. Creates a temporary row from the current gene
+	 * so that it can be evaluated against each row in the dataset
+	 * 
+	 * @param gene, the gene to create a row from
+	 * @param category, the current category of the row from the gene (0-9)
+	 * @return a temporary row that can be compared against the dataset
+	 */
+	public int[] getRow(int[] gene, int category) {
+		int rowLength = 64; /* length of each row in the dataset, without the category */
+		int[] row = new int[rowLength];
+
+		/* every 64 elements in the gene represents a different category, so we multiply
+		 * the category by the row length to get the index of the current section 
+		 * (e.g. if the category is 2, the first element in the section will be at position 128) */
+		int currentSection = category * rowLength;
+
+		/* loop through each element in the current section of the gene and add it to the temporary row */
+		for (int genePos = currentSection, rowPos = 0; genePos < currentSection + rowLength; genePos++, rowPos++)
+			row[rowPos] = gene[genePos];
+
+		return row;
+	}
+
+	/**
 	 * This function runs the second fold for the two fold test. After the 
 	 * population has been trained on the training set, this function compares
 	 * it against the test set and returns the number of correct categorisations.
@@ -222,46 +203,15 @@ public class GeneticAlgorithm {
 	 * particularly effective in generating populations with a high average fitness quickly
 	 * 
 	 * @param dataset, current dataset that is being trained on
-	 * 
 	 */
 	public void bestGeneSelection(int[][] dataset) {
 
 		tempPopulation = new int[POPULATION_SIZE][GENE_LENGTH]; /* reset temporary population */
 
-		int currentFitness;
-		int bestFitness = 0, secondBestFitness = 0;
-		int bestPos = -1, secondBestPos = -1;
-
-		/* loop through each gene in the population in order 
-		 * to find the two genes with the highest fitnesses */
-		/* if the current fitness is more than the best fitness, set best fitness
-				   to current, and set second best fitness to previous best */
-		/* if current fitness is less than the best fitness, but more than the second best,
-						   set secondBestFitness to currentFitness */
-		/* get fitness for the current gene */
-		/*
-		for (int currentGene = 0; currentGene < population.length; currentGene++) {
-		
-		
-		currentFitness = fitness(population[currentGene], dataset);
-		
-		
-		if (currentFitness >= bestFitness) {
-		secondBestFitness = bestFitness;
-		secondBestPos = bestPos;
-		
-		bestFitness = currentFitness;
-		bestPos = currentGene;
-		} else if (currentFitness >= secondBestFitness) {
-		
-		secondBestFitness = currentFitness;
-		secondBestPos = currentGene;
-		}
-		}*/
-		int[] bestGenesInPopulation = findBestGenes(population, dataset);
+		/* find the positions of the two best genes in the population */
+		int[] bestGenesInPopulation = findTwoBestGenes(population, dataset);
 		int[] bestGene1 = population[bestGenesInPopulation[0]], bestGene2 = population[bestGenesInPopulation[1]];
-		// int[] bestGene1 = population[bestPos], bestGene2 =
-		// population[secondBestPos];
+
 		/* populate the temporary population with the two best genes */
 		for (int populationPos = 0; populationPos < population.length; populationPos++) {
 			tempPopulation[populationPos] = bestGene1.clone();
@@ -276,7 +226,7 @@ public class GeneticAlgorithm {
 	* @param dataset, current dataset that is being trained on
 	* @return an array containing the positions of the best genes in the set
 	*/
-	public int[] findBestGenes(int[][] genes, int[][] dataset) {
+	public int[] findTwoBestGenes(int[][] genes, int[][] dataset) {
 		int currentFitness;
 		int bestFitness = 0, secondBestFitness = 0;
 		int bestPos = -1, secondBestPos = -1;
@@ -305,9 +255,7 @@ public class GeneticAlgorithm {
 		}
 
 		/* return an array containing the positions of the two best genes in the given set of genes */
-		int[] highestArr = { bestPos, secondBestPos };
-
-		return highestArr;
+		return new int[] { bestPos, secondBestPos };
 	}
 
 	/**
@@ -333,7 +281,7 @@ public class GeneticAlgorithm {
 			for (int tournamentPos = 0; tournamentPos < numContestants; tournamentPos++)
 				tournament[tournamentPos] = population[tournamentPos];
 
-			bestGenes = findBestGenes(tournament, dataset);
+			bestGenes = findTwoBestGenes(tournament, dataset);
 
 			/* add two best genes from tournament to the temporary population */
 			tempPopulation[populationPos] = tournament[bestGenes[0]];
@@ -366,7 +314,7 @@ public class GeneticAlgorithm {
 	}
 
 	/**
-	 * Uniform crossover function; for each category in the gene, there
+	 * Uniform crossover function; for each element in the gene, there
 	 * is a 50% chance for it to crossover.  
 	 */
 	public void uniformCrossover() {
