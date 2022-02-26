@@ -22,7 +22,9 @@ public class GeneticAlgorithm {
 	int[][] tempPopulation = new int[POPULATION_SIZE][GENE_LENGTH]; /* 2D array created from gene selection techniques */
 
 	/**
-	 * Function that runs the genetic algorithm with a 2-fold test
+	 * Main function that runs the genetic algorithm with a 2-fold test. For the first
+	 * fold, it trains the population on the first dataset, then tests on the second dataset.
+	 * For the second fold, it trains the population on the second dataset, then tests on the first dataset.
 	 * 
 	 * @param dataset1, the first dataset
 	 * @param dataset2, the second dataset
