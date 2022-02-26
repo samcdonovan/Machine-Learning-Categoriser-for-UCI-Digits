@@ -40,15 +40,12 @@ public class GeneticAlgorithm {
 
 			for (int i = 0; i < GENERATIONS; i++) {
 				bestGeneSelection(dataset1);
-				twoPointCrossover();
-				// multiPointCrossover();
-				// uniformCrossover(tempPopulation);
-				// uniformCrossover(dataset1);
-				// bestGeneSelection(dataset1);
-				// tournamentSelection(dataset1);
+				// twoPointCrossover();
+				uniformCrossover();
+
 			}
 
-			int firstFoldTotal = twoFold(dataset2);
+			int firstFoldTotal = testPopulation(dataset2);
 			System.out.println("Training set: cw2DataSet1.csv, test set: cw2DataSet2.csv");
 			System.out.println("Correct categorisations = " + firstFoldTotal + "/" + dataset2.length + "\n");
 
@@ -60,13 +57,15 @@ public class GeneticAlgorithm {
 				bestGeneSelection(dataset2);
 				// uniformCrossover(tempPopulation);
 				twoPointCrossover();
+
+				uniformCrossover();
 				// multiPointCrossover();
 				// uniformCrossover(dataset2);
 				// bestGeneSelection(dataset2);
 				// tournamentSelection(dataset2);
 			}
 
-			int secondFoldTotal = twoFold(dataset1);
+			int secondFoldTotal = testPopulation(dataset1);
 			System.out.println("Training set: cw2DataSet2.csv, test set: cw2DataSet1.csv");
 			System.out.println("Correct categorisations = " + secondFoldTotal + "/" + dataset1.length);
 
@@ -80,7 +79,7 @@ public class GeneticAlgorithm {
 	}
 
 	/**
-	 * Generates a new, randomised population using the P
+	 * Generates a new, randomised population of genes 
 	 */
 	public void generateNewPopulation() {
 
@@ -109,7 +108,7 @@ public class GeneticAlgorithm {
 	 * @param category, the current category of the row from the gene (0-9)
 	 * @return a temporary row that can be compared against the dataset
 	 */
-	public static int[] getRow(int[] gene, int category) {
+	public int[] getRow(int[] gene, int category) {
 		int rowLength = 64; /* length of each row in the dataset, without the category */
 		int[] row = new int[rowLength];
 
@@ -123,19 +122,6 @@ public class GeneticAlgorithm {
 			row[rowPos] = gene[genePos];
 
 		return row;
-	}
-
-	public int twoFold(int[][] dataset) {
-		int bestFitness = 0;
-		int currentFitness = 0;
-		for (int pos = 0; pos < population.length; pos++) {
-
-			currentFitness = fitness(population[pos], dataset);
-			if (currentFitness > bestFitness)
-				bestFitness = currentFitness;
-		}
-
-		return bestFitness;
 	}
 
 	/**
@@ -154,25 +140,30 @@ public class GeneticAlgorithm {
 		int minPos = -1;
 		int[] currentRow;
 
-		for (int pos = 0; pos < 10; pos++) {
+		/* loop through the 10 sections of the gene, each representing one of the categories */
+		for (int category = 0; category < 10; category++) {
 
-			currentRow = getRow(gene, pos);
-			for (int datasetPos = 0; datasetPos < dataset.length; datasetPos += 10) {
-				for (int somethign = datasetPos; somethign < datasetPos + 10; somethign++) {
+			/* generate a pseudo-row using the current section of the gene */
+			currentRow = getRow(gene, category);
 
-					currentDist = euclideanDistance(currentRow, dataset[somethign]);
+			/* loop through every 10 rows in the dataset, if the neareset neighbour in the current section
+			 * matches the current category, the categorisation was correct */
+			for (int datasetSection = 0; datasetSection < dataset.length; datasetSection += 10) {
+				for (int datasetPos = datasetSection; datasetPos < datasetSection + 10; datasetPos++) {
+
+					currentDist = euclideanDistance(currentRow, dataset[datasetPos]);
 
 					/* if the distance between the two rows from each dataset is smaller than the current
 					 * minimum distance, set minimum distance to this new distance and save the position in minPos*/
 					if (currentDist < min) {
 						min = currentDist;
-						minPos = somethign;
+						minPos = datasetPos;
 					}
 				}
 
 				/* if the nearest neighbour both have the same category in their last cell (65)
 				 * the categorisation is correct, numCorrect is incremented by 1 */
-				if (pos == dataset[minPos][dataset[0].length - 1])
+				if (category == dataset[minPos][dataset[0].length - 1])
 					fitness++;
 
 			}
@@ -181,13 +172,13 @@ public class GeneticAlgorithm {
 	}
 
 	/**
-	 * Euclidean distance calculator, calculates distance
-	 * between two rows of data from the dataset 
-	 * 
-	 * @param gene, the gene whose distance is to be calculated
-	 * @param datasetRow, the row in the dataset to compare against
-	 * @return double, the Euclidean distance between each row
-	 */
+		 * Euclidean distance calculator, calculates distance
+		 * between two rows of data from the dataset 
+		 * 
+		 * @param gene, the gene whose distance is to be calculated
+		 * @param datasetRow, the row in the dataset to compare against
+		 * @return double, the Euclidean distance between each row
+		 */
 	public double euclideanDistance(int[] gene, int[] datasetRow) {
 
 		int sum = 0;
@@ -200,6 +191,32 @@ public class GeneticAlgorithm {
 	}
 
 	/**
+	 * This function runs the second fold for the two fold test. After the 
+	 * population has been trained on the training set, this function compares
+	 * it against the test set and returns the number of correct categorisations.
+	 * 
+	 * @param dataset, the test set
+	 * @return the number of correct categorisations (0-2810)
+	 */
+	public int testPopulation(int[][] dataset) {
+		int bestFitness = 0;
+		int currentFitness = 0;
+
+		/* loop through every gene in the population and measure their fitness */
+		for (int pos = 0; pos < population.length; pos++) {
+
+			currentFitness = fitness(population[pos], dataset);
+
+			/* find the best fitness, and this will be used to represent the total number
+			   of correct categorisations for this fold. */
+			if (currentFitness > bestFitness)
+				bestFitness = currentFitness;
+		}
+
+		return bestFitness;
+	}
+
+	/**
 	 * Retrieves the two genes in the population with the highest fitness. This is
 	 * a very simple selection function, but because of this simplicity it has proven
 	 * particularly effective in generating populations with a high average fitness quickly
@@ -209,34 +226,42 @@ public class GeneticAlgorithm {
 	 */
 	public void bestGeneSelection(int[][] dataset) {
 
-		int currentEvaluation; /* the fitness of the current gene */
-		int firstHighest = 0, secondHighest = 0;
-		int firstHighestPos = -1, secondHighestPos = -1;
-
 		tempPopulation = new int[POPULATION_SIZE][GENE_LENGTH]; /* reset temporary population */
+
+		int currentFitness;
+		int bestFitness = 0, secondBestFitness = 0;
+		int bestPos = -1, secondBestPos = -1;
 
 		/* loop through each gene in the population in order 
 		 * to find the two genes with the highest fitnesses */
+		/* if the current fitness is more than the best fitness, set best fitness
+				   to current, and set second best fitness to previous best */
+		/* if current fitness is less than the best fitness, but more than the second best,
+						   set secondBestFitness to currentFitness */
+		/* get fitness for the current gene */
+		/*
 		for (int currentGene = 0; currentGene < population.length; currentGene++) {
-
-			/* get fitness for the current gene */
-			currentEvaluation = fitness(population[currentGene], dataset);
-
-			if (currentEvaluation >= firstHighest) {
-				secondHighest = firstHighest;
-				secondHighestPos = firstHighestPos;
-
-				firstHighest = currentEvaluation;
-				firstHighestPos = currentGene;
-			} else if (currentEvaluation >= secondHighest) {
-				secondHighest = currentEvaluation;
-				secondHighestPos = currentGene;
-			}
-
+		
+		
+		currentFitness = fitness(population[currentGene], dataset);
+		
+		
+		if (currentFitness >= bestFitness) {
+		secondBestFitness = bestFitness;
+		secondBestPos = bestPos;
+		
+		bestFitness = currentFitness;
+		bestPos = currentGene;
+		} else if (currentFitness >= secondBestFitness) {
+		
+		secondBestFitness = currentFitness;
+		secondBestPos = currentGene;
 		}
-
-		int[] bestGene1 = population[firstHighestPos].clone(), bestGene2 = population[secondHighestPos].clone();
-
+		}*/
+		int[] bestGenesInPopulation = findBestGenes(population, dataset);
+		int[] bestGene1 = population[bestGenesInPopulation[0]], bestGene2 = population[bestGenesInPopulation[1]];
+		// int[] bestGene1 = population[bestPos], bestGene2 =
+		// population[secondBestPos];
 		/* populate the temporary population with the two best genes */
 		for (int populationPos = 0; populationPos < population.length; populationPos++) {
 			tempPopulation[populationPos] = bestGene1.clone();
@@ -245,7 +270,49 @@ public class GeneticAlgorithm {
 	}
 
 	/**
-	 * Tournament selection method for selecting parent genes
+	* Helper function that retrieves the two genes in the given set of genes with the highest fitness
+	* 
+	* @param genes, the set of genes to find the best genes for
+	* @param dataset, current dataset that is being trained on
+	* @return an array containing the positions of the best genes in the set
+	*/
+	public int[] findBestGenes(int[][] genes, int[][] dataset) {
+		int currentFitness;
+		int bestFitness = 0, secondBestFitness = 0;
+		int bestPos = -1, secondBestPos = -1;
+
+		/* loop through each gene in the population in order 
+		 * to find the two genes with the highest fitnesses */
+		for (int currentGene = 0; currentGene < genes.length; currentGene++) {
+
+			/* get fitness for the current gene */
+			currentFitness = fitness(genes[currentGene], dataset);
+
+			/* if the current fitness is more than the best fitness, set best fitness
+			   to current, and set second best fitness to previous best */
+			if (currentFitness >= bestFitness) {
+				secondBestFitness = bestFitness;
+				secondBestPos = bestPos;
+
+				bestFitness = currentFitness;
+				bestPos = currentGene;
+			} else if (currentFitness >= secondBestFitness) {
+				/* if current fitness is less than the best fitness, but more than the second best,
+				   set secondBestFitness to currentFitness */
+				secondBestFitness = currentFitness;
+				secondBestPos = currentGene;
+			}
+		}
+
+		/* return an array containing the positions of the two best genes in the given set of genes */
+		int[] highestArr = { bestPos, secondBestPos };
+
+		return highestArr;
+	}
+
+	/**
+	 * Tournament selection method for selecting parent genes. Chooses a random set of 10
+	 * genes in the population and the two best genes from that set become parents for the next population
 	 * 
 	 * @param dataset, current training set
 	 */
@@ -266,7 +333,7 @@ public class GeneticAlgorithm {
 			for (int tournamentPos = 0; tournamentPos < numContestants; tournamentPos++)
 				tournament[tournamentPos] = population[tournamentPos];
 
-			bestGenes = findBestGenesTournament(tournament, dataset);
+			bestGenes = findBestGenes(tournament, dataset);
 
 			/* add two best genes from tournament to the temporary population */
 			tempPopulation[populationPos] = tournament[bestGenes[0]];
@@ -299,43 +366,6 @@ public class GeneticAlgorithm {
 	}
 
 	/**
-	* Retrieves the two genes in the population with the highest fitness
-	* 
-	* @param tournament
-	* @param dataset, current dataset that is being trained on
-	* @return
-	*/
-	public int[] findBestGenesTournament(int[][] tournament, int[][] dataset) {
-		int currentEval;
-		int firstHighest = 0, secondHighest = 0;
-		int firstHighestPos = 0, secondHighestPos = 0;
-
-		/* loop through each gene in the population in order 
-		 * to find the two genes with the highest fitnesses */
-		for (int currentGene = 0; currentGene < tournament.length; currentGene++) {
-
-			/* get fitness for the current gene */
-			currentEval = fitness(tournament[currentGene], dataset);
-
-			if (currentEval > firstHighest) {
-				secondHighest = firstHighest;
-				secondHighestPos = firstHighestPos;
-
-				firstHighest = currentEval;
-				firstHighestPos = currentGene;
-			} else if (currentEval >= secondHighest) {
-				secondHighest = currentEval;
-				secondHighestPos = currentGene;
-			}
-		}
-
-		/* return an array containing the positions of the two best genes in the population */
-		int[] highestArr = { firstHighestPos, secondHighestPos };
-
-		return highestArr;
-	}
-
-	/**
 	 * Uniform crossover function; for each category in the gene, there
 	 * is a 50% chance for it to crossover.  
 	 */
@@ -353,20 +383,20 @@ public class GeneticAlgorithm {
 			newGene2 = tempPopulation[populationPos + 1];
 
 			/* loop through each element in the gene with a 50% chance for a crossover to occur */
-			for (int pos = 0; pos < newGene1.length; pos++) {
+			for (int genePos = 0; genePos < newGene1.length; genePos++) {
 
 				randomChance = Math.random() * 100;
 
 				/* if the random chance is higher than the crossover chance, perform crossover */
 				if (randomChance >= crossoverChance) {
-					tempElement = newGene1[pos];
-					newGene1[pos] = newGene2[pos];
-					newGene2[pos] = tempElement;
+					tempElement = newGene1[genePos];
+					newGene1[genePos] = newGene2[genePos];
+					newGene2[genePos] = tempElement;
 				}
 
 				/* call mutate on the current gene elements */
-				newGene1[pos] = mutate(newGene1[pos]);
-				newGene2[pos] = mutate(newGene2[pos]);
+				newGene1[genePos] = mutate(newGene1[genePos]);
+				newGene2[genePos] = mutate(newGene2[genePos]);
 
 			}
 

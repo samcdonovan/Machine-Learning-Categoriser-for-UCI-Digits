@@ -12,11 +12,18 @@ import java.io.IOException;
  * Updated: 09/03/22
  * 
  * INSTRUCTIONS:
+ * Lines 26 and 30 search the current directory for "cw2DataSet1.csv" and "cw2DataSet2.csv" respectively.
+ * If those files are found in the current directory, the main function will first run the Nearest Neighbour algorithm,
+ * which should finish in > 10s, with an accuracy of ~98.3%.
+ * Next, the Multilayer Perceptron will be ran
+ * Finally, the Genetic Algorithm will run. This should finish in > 30s and the accuracy will range
+ * from roughly 45% to 70%, but will be different every time it is ran.
  */
 public class Main {
 
 	public static void main(String[] args) {
 
+		/* get the file path for both datasets; these should be placed in the current directory */
 		String dataFile1 = System.getProperty("user.dir") + File.separator + "data" + File.separator
 				+ "cw2DataSet1.csv";
 		System.out.println("Loading from " + dataFile1);
@@ -25,23 +32,29 @@ public class Main {
 				+ "cw2DataSet2.csv";
 		System.out.println("Loading from " + dataFile2);
 
+		/* read the two datasets into 2D int arrays */
 		int[][] dataset1 = readFile(dataFile1);
 		int[][] dataset2 = readFile(dataFile2);
-		
+
+		/* run the Nearest Neighbour algorithm using Euclidean distance */
 		System.out.println("\nNearest neighbour (Euclidean): ");
 		System.out.println("-------------------");
 		NearestNeighbour.run(dataset1, dataset2);
-	/*
-		System.out.println("\nGenetic Algorithm: ");
+
+		/* run the Multilayer perceptron */
+		/*
+		System.out.println("\nMultilayer Perceptron: ");
+		System.out.println("-------------------");
+		MultiLayerPerceptron mlp = new MultiLayerPerceptron();
+		geneticAlgorithm.run(dataset1, dataset2);
+		*/
+
+		/* run the Genetic Algorithm */
+		System.out.println("\nGenetic Algorithm (Simple 'Best' gene selection, uniform crossover): ");
 		System.out.println("-------------------");
 		GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
 		geneticAlgorithm.run(dataset1, dataset2);
-	/*	
-System.out.println("\nMultilayer Perceptron: ");
-		System.out.println("-------------------");
-		MultiLayerPerceptron mlp = new MultiLayerPerceptron();
-		geneticAlgorithm.run(dataset1, dataset2);*/
-	
+
 	}
 
 	/**
@@ -81,7 +94,6 @@ System.out.println("\nMultilayer Perceptron: ");
 
 				dataset = copyArray(dataset, ++lineCount); /* create a new array with one more line */
 				dataset[lineCount - 1] = rowOfData; /* add new row of data to the end of the dataset array */
-
 			}
 
 			bufferReader.close(); /* close buffer reader after all lines have been read */
@@ -89,9 +101,8 @@ System.out.println("\nMultilayer Perceptron: ");
 		} catch (IOException fileNotFound) { /* if file is not found, stop the program */
 			System.out.println("File not found at " + filePath);
 			return dataset;
-		} finally {
-			return dataset;
 		}
+		return dataset;
 	}
 
 	/**
