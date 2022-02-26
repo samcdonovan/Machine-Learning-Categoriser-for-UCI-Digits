@@ -24,7 +24,8 @@ public class NearestNeighbour {
 
 		/* use both datasets to run a 2-fold test, returning the 
 		 * total number of correct categorisations from both folds */
-		int totalCorrect = NearestNeighbour.categorise(dataset1, dataset2) + NearestNeighbour.categorise(dataset2, dataset1);
+		int totalCorrect = NearestNeighbour.categorise(dataset1, dataset2)
+				+ NearestNeighbour.categorise(dataset2, dataset1);
 
 		double percentageCorrect;
 
@@ -40,7 +41,8 @@ public class NearestNeighbour {
 
 	/**
 	 * Main categorisation function; uses Euclidean distance to 
-	 * calculate the nearest row in the other dataset
+	 * calculate the nearest row in the other dataset, and checks if the categories match
+	 * to determine whether the categorisation was correct or not.
 	 * 
 	 * @param dataset1, data from one of the datasets
 	 * @param dataset2, data from the other dataset
@@ -100,6 +102,7 @@ public class NearestNeighbour {
 		for (int pos = 0; pos < trainRow.length - 1; pos++)
 			sum += ((trainRow[pos] - testRow[pos]) * (trainRow[pos] - testRow[pos]));
 
+		/* return the square root of the sum, the distance between both arrays */
 		return Math.sqrt(sum);
 	}
 }
