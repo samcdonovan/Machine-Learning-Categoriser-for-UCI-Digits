@@ -3,3 +3,6 @@
 
 /* folder containing data */
 data
+
+/* .csv data files */
+*.csv

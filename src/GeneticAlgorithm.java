@@ -57,7 +57,7 @@ public class GeneticAlgorithm {
 		/* print the total number of correct categorisations and its percentage (the full percentage and to 2 d.p.) */
 		int totalCorrect = firstFoldTotal + secondFoldTotal;
 		double percentageCorrect = ((double) totalCorrect / (double) (dataset1.length + dataset2.length)) * 100;
-		System.out.println("\nTotal correct: " + totalCorrect + "/" + (dataset1.length + dataset2.length) + " = "
+		System.out.println("Total correct: " + totalCorrect + "/" + (dataset1.length + dataset2.length) + " = "
 				+ Math.round(percentageCorrect * 10.0) / 10.0 + "% (" + percentageCorrect + "%)");
 	}
 

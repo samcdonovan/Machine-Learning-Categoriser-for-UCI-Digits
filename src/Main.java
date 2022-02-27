@@ -15,7 +15,7 @@ import java.io.IOException;
  * Lines 26 and 30 search the current directory for "cw2DataSet1.csv" and "cw2DataSet2.csv" respectively.
  * If those files are found in the current directory, the main function will first run the Nearest Neighbour algorithm,
  * which should finish in > 10s, with an accuracy of ~98.3%.
- * Next, the Multilayer Perceptron will be ran
+ * Next, the Multilayer Perceptron will run. This should finish in ~30s and the accuracy will 
  * Finally, the Genetic Algorithm will run. This should finish in > 30s and the accuracy will range
  * from roughly 45% to 70%, but will be different every time it is ran.
  */
@@ -24,12 +24,10 @@ public class Main {
 	public static void main(String[] args) {
 
 		/* get the file path for both datasets; these should be placed in the current directory */
-		String dataFile1 = System.getProperty("user.dir") + File.separator + "data" + File.separator
-				+ "cw2DataSet1.csv";
+		String dataFile1 = System.getProperty("user.dir") + File.separator + "cw2DataSet1.csv";
 		System.out.println("Loading from " + dataFile1);
 
-		String dataFile2 = System.getProperty("user.dir") + File.separator + "data" + File.separator
-				+ "cw2DataSet2.csv";
+		String dataFile2 = System.getProperty("user.dir") + File.separator + "cw2DataSet2.csv";
 		System.out.println("Loading from " + dataFile2);
 
 		/* read the two datasets into 2D int arrays */
@@ -52,7 +50,6 @@ public class Main {
 		System.out.println("-------------------");
 		GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
 		geneticAlgorithm.twoFold(dataset1, dataset2);
-
 	}
 
 	/**
