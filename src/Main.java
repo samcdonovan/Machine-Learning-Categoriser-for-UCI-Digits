@@ -39,21 +39,19 @@ public class Main {
 		/* run the Nearest Neighbour algorithm using Euclidean distance */
 		System.out.println("\nNearest neighbour (Euclidean): ");
 		System.out.println("-------------------");
-		NearestNeighbour.run(dataset1, dataset2);
+		NearestNeighbour.twoFold(dataset1, dataset2);
 
 		/* run the Multilayer perceptron */
-		/*
 		System.out.println("\nMultilayer Perceptron: ");
 		System.out.println("-------------------");
-		MultiLayerPerceptron mlp = new MultiLayerPerceptron();
-		geneticAlgorithm.run(dataset1, dataset2);
-		*/
+		MultilayerPerceptron mlp = new MultilayerPerceptron();
+		mlp.twoFold(dataset1, dataset2);
 
 		/* run the Genetic Algorithm */
 		System.out.println("\nGenetic Algorithm (Simple 'Best' gene selection, uniform crossover): ");
 		System.out.println("-------------------");
 		GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
-		geneticAlgorithm.run(dataset1, dataset2);
+		geneticAlgorithm.twoFold(dataset1, dataset2);
 
 	}
 

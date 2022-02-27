@@ -12,13 +12,13 @@
 public class NearestNeighbour {
 
 	/**
-	 * Main function that runs the Nearest Neighbour categoriser and prints the 
-	 * total number of correct categorisations, as well as how accurate it was (as a percentage)
+	 * Main function that runs the a two fold test using the Nearest Neighbour algorithm. 
+	 * Prints the total number of correct categorisations, as well as how accurate it was (as a percentage)
 	 * 
 	 * @param dataset1, the first dataset
 	 * @param dataset2, the second dataset
 	 */
-	public static void run(int[][] dataset1, int[][] dataset2) {
+	public static void twoFold(int[][] dataset1, int[][] dataset2) {
 		/* get total dataset size; both datasets combined */
 		int fullDatasetSize = dataset1.length + dataset2.length;
 

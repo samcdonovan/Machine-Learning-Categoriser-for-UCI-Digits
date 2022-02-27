@@ -29,7 +29,7 @@ public class GeneticAlgorithm {
 	 * @param dataset1, the first dataset
 	 * @param dataset2, the second dataset
 	 */
-	public void run(int[][] dataset1, int[][] dataset2) {
+	public void twoFold(int[][] dataset1, int[][] dataset2) {
 
 		/* generate an initial population using dataset1 */
 		generateNewPopulation();
@@ -131,13 +131,13 @@ public class GeneticAlgorithm {
 	}
 
 	/**
-		 * Euclidean distance calculator, calculates distance
-		 * between two rows of data from the dataset 
-		 * 
-		 * @param gene, the gene whose distance is to be calculated
-		 * @param datasetRow, the row in the dataset to compare against
-		 * @return double, the Euclidean distance between each row
-		 */
+	 * Euclidean distance calculator, calculates distance
+	 * between two rows of data from the dataset 
+	 * 
+	 * @param gene, the gene whose distance is to be calculated
+	 * @param datasetRow, the row in the dataset to compare against
+	 * @return double, the Euclidean distance between each row
+	 */
 	public double euclideanDistance(int[] gene, int[] datasetRow) {
 
 		int sum = 0;
