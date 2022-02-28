@@ -14,7 +14,7 @@ public class MultilayerPerceptron {
 	static final int NUM_HIDDEN = 10; /* number of hidden nodes */
 	static final int NUM_OUTPUT = 10; /* number of output nodes */
 
-	static final int ITERATIONS = 300; /* maximum number of training iterations */
+	static final int ITERATIONS = 30; /* maximum number of training iterations */
 	static final double ERROR_THRESHOLD = 0.01; /* threshold for training error */
 
 	static final double LEARNING_RATE = 0.05; /* low learning rate to avoid convergence */
@@ -49,13 +49,13 @@ public class MultilayerPerceptron {
 		int totalCorrect = firstFoldTotal + secondFoldTotal;
 		double percentageCorrect = ((double) totalCorrect / (double) (dataset1.length + dataset2.length)) * 100;
 		System.out.println("Total correct: " + totalCorrect + "/" + (dataset1.length + dataset2.length) + " = "
-				+ Math.round(percentageCorrect * 10.0) / 10.0 + "% (" + percentageCorrect + "%)");
+				+ Math.round(percentageCorrect * 100.0) / 100.0 + "% (" + percentageCorrect + "%)");
 	}
 
 	/**
 	* Helper function to initialise all weights and biases in the MLP
 	*/
-	public void initialise() {
+	private void initialise() {
 
 		/* maximum and minimum range for the random weights */
 		int max = 1;
@@ -81,7 +81,7 @@ public class MultilayerPerceptron {
 	 * @param dataset, the current dataset (train or test)
 	 * @param currentInput, the index of the current row in the dataset
 	 */
-	public void forwardPassthrough(int[][] dataset, int currentInput) {
+	private void forwardPassthrough(int[][] dataset, int currentInput) {
 
 		double weightedInput = 0.0;
 		double sigmoidVal;
@@ -128,7 +128,7 @@ public class MultilayerPerceptron {
 	 * @param testSet, the current test dataset
 	 * @return the number of correct categorisations
 	 */
-	public int test(int[][] testSet) {
+	private int test(int[][] testSet) {
 
 		int currentBestIndex = -1, correctCount = 0;
 
@@ -155,6 +155,35 @@ public class MultilayerPerceptron {
 		return correctCount;
 	}
 
+	private double lossFunction(int predictedCategory, int actualCategory) {
+		double squaredError = Math.pow(predictedCategory - actualCategory, 2);
+
+	}
+
+	private double gradientDescentOut(double outputVal,  double hiddenVal, int desiredOutput){
+		double error = outputVal - desiredOutput;
+		double delta = outputVal * (1 - outputVal) * error;
+		return LEARNING_RATE * hiddenVal * delta; 
+		double hiddenError = hiddenVal * (1 - hiddenVal) * (weightedSum);
+		outputVal * (1 - outputVal);
+		/*-(LEARNING_RATE * outputLayer[currentInput][outputNode]
+							* ((outputLayer[currentInput][outputNode] - outputNode)
+									* outputLayer[currentInput][outputNode]
+									* (1 - outputLayer[currentInput][outputNode])));
+									 */
+	}
+
+	private double gradientDescentHidden(int inputVal, double hiddenVal, double outputDelta) {
+
+		double hiddenDelta = hiddenVal * (1 - hiddenVal) * outputDelta;
+		return LEARNING_RATE * inputVal * hiddenDelta;
+		/*-(LEARNING_RATE * outputLayer[currentInput][outputNode]
+							* ((outputLayer[currentInput][outputNode] - outputNode)
+									* outputLayer[currentInput][outputNode]
+									* (1 - outputLayer[currentInput][outputNode])));
+									 */
+	}
+
 	/**
 	 * 
 	 * @param trainingSet
@@ -163,10 +192,14 @@ public class MultilayerPerceptron {
 
 		int actualCategory = -1;
 		double totalCrossEntropy;
+		double meanSquaredError = 0.0;
 
 		int numIterations = 0;
 		boolean correctCategory;
 		int outputNode;
+
+		double outputErrorGradient;
+		double sumOfOutputErrorGradients = 0.0;
 		do {
 			numIterations++;
 			totalCrossEntropy = 0.0;
@@ -175,19 +208,39 @@ public class MultilayerPerceptron {
 
 				forwardPassthrough(trainingSet, currentInput);
 
-				outputNode = findHighestInOutput(currentInput);
-				correctCategory = outputNode == actualCategory;
+				for (int dataPoint = 0; dataPoint < trainingSet[currentInput].length; dataPoint++) {
+					outputNode = findHighestInOutput(currentInput);
+					correctCategory = outputNode == actualCategory;
+					double outputVal = outputLayer[currentInput][outputNode];
+					hiddenVal = hiddenLayer[currentInput];
+					if (!correctCategory) {
+						meanSquaredError += Math.pow(outputNode - actualCategory, 2);
+						outputErrorGradient = outputVal * (1 - outputVal) * (outputVal - trainingSet[currentInput][64]);
+						sumOfOutputErrorGradients += outputErrorGradient * outputWeights[outputNode];
+						outputWeights[outputNode] += gradientDescentOutput(outputVal, hiddenVal, trainingSet[currentInput][64]);
+						for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
+							hiddenWeights[hiddenNode] += gradientDescentHidden(trainingSet[currentInput][dataPoint],
+									hiddenLayer[currentInput][hiddenNode], sumOfOutputErrorGradients);
+						}
+						/*outputWeights[outputNode] -= -(LEARNING_RATE * outputLayer[currentInput][outputNode]
+								* ((outputLayer[currentInput][outputNode] - outputNode)
+										* outputLayer[currentInput][outputNode]
+										* (1 - outputLayer[currentInput][outputNode])));*/
+						// System.out.println(outputWeights[outputNode]);
+						// gradientDescent(outputLayer[currentInput][outputNode]);
 
-				if (!correctCategory) {
-
-					outputWeights[outputNode] -= gradientDescent(outputLayer[currentInput][outputNode]);
-
-					totalCrossEntropy += crossEntropy(outputLayer[currentInput][outputNode], correctCategory);
+						// totalCrossEntropy +=
+						// crossEntropy(outputLayer[currentInput][outputNode],
+						// correctCategory);
+					}
 				}
 			}
-			/* loop while there are still a reasonable amount of erros and while 
+
+			meanSquaredError = meanSquaredError / NUM_INPUTS;
+			// System.out.println(meanSquaredError);
+			/* loop while there are still a reasonable amount of errors and while 
 			   the specified number of iterations has not yet passed */
-		} while (totalCrossEntropy > ERROR_THRESHOLD && numIterations < ITERATIONS);
+		} while (meanSquaredError > ERROR_THRESHOLD && numIterations < ITERATIONS);
 	}
 
 	/**
@@ -198,7 +251,7 @@ public class MultilayerPerceptron {
 	 * of the sigmoid is to be used
 	 * @return new value after being passed through the sigmoid function
 	 */
-	public double sigmoidTransfer(double dotProduct, boolean derivative) {
+	private double sigmoidTransfer(double dotProduct, boolean derivative) {
 
 		/* if the derivative needs to be used, the value of the sigmoid of the dot product
 		   is retrieved, and then passed into the derived sigmoid function */
@@ -217,14 +270,14 @@ public class MultilayerPerceptron {
 	 * @param correctCategory
 	 * @return
 	 */
-	public double crossEntropy(double value, boolean correctCategory) {
+	private double crossEntropy(double value, boolean correctCategory) {
 		if (!correctCategory)
 			return -Math.log(value);
 
 		return -Math.log(1 - value);
 	}
 
-	public double gradientDescent(double value) {
+	private double gradientDescent(double value) {
 
 		return value * LEARNING_RATE;
 	}
@@ -235,7 +288,7 @@ public class MultilayerPerceptron {
 	 * @param currentInput, the index of the current input layer
 	 * @return the index of the output node with the highest probability
 	 */
-	public int findHighestInOutput(int currentInput) {
+	private int findHighestInOutput(int currentInput) {
 
 		double currentHighest = -1.0;
 		double currentOutputVal;
