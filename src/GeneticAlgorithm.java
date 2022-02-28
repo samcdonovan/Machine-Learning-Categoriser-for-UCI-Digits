@@ -58,13 +58,13 @@ public class GeneticAlgorithm {
 		int totalCorrect = firstFoldTotal + secondFoldTotal;
 		double percentageCorrect = ((double) totalCorrect / (double) (dataset1.length + dataset2.length)) * 100;
 		System.out.println("Total correct: " + totalCorrect + "/" + (dataset1.length + dataset2.length) + " = "
-				+ Math.round(percentageCorrect * 10.0) / 10.0 + "% (" + percentageCorrect + "%)");
+				+ Math.round(percentageCorrect * 100.0) / 100.0 + "% (" + percentageCorrect + "%)");
 	}
 
 	/**
 	 * Generates a new, randomised population of genes 
 	 */
-	public void generateNewPopulation() {
+	private void generateNewPopulation() {
 
 		/* empty the population */
 		population = new int[POPULATION_SIZE][GENE_LENGTH];
@@ -91,7 +91,7 @@ public class GeneticAlgorithm {
 	 * @param dataset, the dataset to test the gene against
 	 * @return the fitness score for the given gene
 	 */
-	public int fitness(int[] gene, int[][] dataset) {
+	private int fitness(int[] gene, int[][] dataset) {
 
 		int fitness = 0;
 		double currentDist;
@@ -138,7 +138,7 @@ public class GeneticAlgorithm {
 	 * @param datasetRow, the row in the dataset to compare against
 	 * @return double, the Euclidean distance between each row
 	 */
-	public double euclideanDistance(int[] gene, int[] datasetRow) {
+	private double euclideanDistance(int[] gene, int[] datasetRow) {
 
 		int sum = 0;
 
@@ -157,7 +157,7 @@ public class GeneticAlgorithm {
 	 * @param category, the current category of the row from the gene (0-9)
 	 * @return a temporary row that can be compared against the dataset
 	 */
-	public int[] getRow(int[] gene, int category) {
+	private int[] getRow(int[] gene, int category) {
 		int rowLength = 64; /* length of each row in the dataset, without the category */
 		int[] row = new int[rowLength];
 
@@ -181,7 +181,7 @@ public class GeneticAlgorithm {
 	 * @param dataset, the test set
 	 * @return the number of correct categorisations (0-2810)
 	 */
-	public int testPopulation(int[][] dataset) {
+	private int testPopulation(int[][] dataset) {
 		int bestFitness = 0;
 		int currentFitness = 0;
 
@@ -206,7 +206,7 @@ public class GeneticAlgorithm {
 	 * 
 	 * @param dataset, current dataset that is being trained on
 	 */
-	public void bestGeneSelection(int[][] dataset) {
+	private void bestGeneSelection(int[][] dataset) {
 
 		tempPopulation = new int[POPULATION_SIZE][GENE_LENGTH]; /* reset temporary population */
 
@@ -228,7 +228,7 @@ public class GeneticAlgorithm {
 	* @param dataset, current dataset that is being trained on
 	* @return an array containing the positions of the best genes in the set
 	*/
-	public int[] findTwoBestGenes(int[][] genes, int[][] dataset) {
+	private int[] findTwoBestGenes(int[][] genes, int[][] dataset) {
 		int currentFitness;
 		int bestFitness = 0, secondBestFitness = 0;
 		int bestPos = -1, secondBestPos = -1;
@@ -266,7 +266,7 @@ public class GeneticAlgorithm {
 	 * 
 	 * @param dataset, current training set
 	 */
-	public void tournamentSelection(int[][] dataset) {
+	private void tournamentSelection(int[][] dataset) {
 
 		/* use Fisher Yates shuffle to shuffle the population */
 		fisherYatesShuffle();
@@ -297,7 +297,7 @@ public class GeneticAlgorithm {
 	 * Fisher-Yates shuffle algorithm, shuffles the current population
 	 * in order to select random genes for the tournament
 	 */
-	public void fisherYatesShuffle() {
+	private void fisherYatesShuffle() {
 
 		int randomIndex;
 		int[] tempGene;
@@ -319,7 +319,7 @@ public class GeneticAlgorithm {
 	 * Uniform crossover function; for each element in the gene, there
 	 * is a 50% chance for it to crossover.  
 	 */
-	public void uniformCrossover() {
+	private void uniformCrossover() {
 		double crossoverChance = 50.0;
 		double randomChance; /* random chance that the gene element will crossover */
 		int tempElement;
@@ -361,7 +361,7 @@ public class GeneticAlgorithm {
 	 * to crossover with the other parent gene. Uses the temporary population
 	 * created through gene selection.
 	 */
-	public void twoPointCrossover() {
+	private void twoPointCrossover() {
 
 		double ratio; /* ratio for generating cross points */
 		int crossPoint1, crossPoint2; /* positions for the genes to crossover */
@@ -388,7 +388,7 @@ public class GeneticAlgorithm {
 	 * and randomly chooses the size of each crossover, then performs all of these
 	 * crossovers between the two parent genes. 
 	 */
-	public void multiPointCrossover() {
+	private void multiPointCrossover() {
 
 		int numCrossPoints; /* random number of cross points, different for each set of genes */
 		int maxCross; /* max crossover size, generated using numCrossPoints */
@@ -440,7 +440,7 @@ public class GeneticAlgorithm {
 	 * @param crossPoint2, second crossover point
 	 * @param endPos, end position of the crossover
 	 */
-	public void crossoverGenesAndAddToPopulation(int populationPos, int startPos, int crossPoint1, int crossPoint2,
+	private void crossoverGenesAndAddToPopulation(int populationPos, int startPos, int crossPoint1, int crossPoint2,
 			int endPos) {
 
 		/* new genes to be created from parent genes */
@@ -483,7 +483,7 @@ public class GeneticAlgorithm {
 	 * @param element, the gene element to perform mutation on
 	 * @return the gene element that is either mutated or unchanged
 	 */
-	public int mutate(int element) {
+	private int mutate(int element) {
 
 		double randomChance = Math.random() * 100; /* generate random number from 0 to 100 */
 
@@ -501,7 +501,7 @@ public class GeneticAlgorithm {
 	 * 
 	 * @param gene the gene to be mutated
 	 */
-	public void mutate(int[] gene) {
+	private void mutate(int[] gene) {
 
 		double randomChance;
 

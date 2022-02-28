@@ -35,7 +35,7 @@ public class NearestNeighbour {
 
 			/* print the correct total and the calculated percentage of correct categorisations */
 			System.out.println("Total correct: " + totalCorrect + "/" + fullDatasetSize + " = "
-					+ Math.round(percentageCorrect * 10.0) / 10.0 + "% (" + percentageCorrect + "%)");
+					+ Math.round(percentageCorrect * 100.0) / 100.0 + "% (" + percentageCorrect + "%)");
 		}
 	}
 
@@ -48,7 +48,7 @@ public class NearestNeighbour {
 	 * @param dataset2, data from the other dataset
 	 * @return number of correct categorisations
 	 */
-	public static int categorise(int[][] dataset1, int[][] dataset2) {
+	private static int categorise(int[][] dataset1, int[][] dataset2) {
 
 		double min = Float.MAX_VALUE; /* current minimum distance, initialised to INF */
 		double currentDist; /* current distance to compare to min */
@@ -94,7 +94,7 @@ public class NearestNeighbour {
 	 * @param testRow, array representing a row in the test set
 	 * @return the Euclidean distance between each row
 	 */
-	public static double euclideanDistance(int[] trainRow, int[] testRow) {
+	private static double euclideanDistance(int[] trainRow, int[] testRow) {
 
 		int sum = 0;
 
