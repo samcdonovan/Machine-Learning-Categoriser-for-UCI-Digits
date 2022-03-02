@@ -10,8 +10,9 @@
  */
 public class NearestNeighbour {
 
+
 	/**
-	 * Main function that runs the a two fold test using the Nearest Neighbour algorithm. 
+	 * Main function that runs a two fold test using the Nearest Neighbour algorithm. 
 	 * Prints the total number of correct categorisations, as well as how accurate it was (as a percentage)
 	 * 
 	 * @param dataset1, the first dataset

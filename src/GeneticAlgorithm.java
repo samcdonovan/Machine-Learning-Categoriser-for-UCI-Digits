@@ -30,34 +30,41 @@ public class GeneticAlgorithm {
 	 */
 	public void twoFold(int[][] dataset1, int[][] dataset2) {
 
-		/* generate an initial population using dataset1 */
-		generateNewPopulation();
-
-		for (int generation = 0; generation < GENERATIONS; generation++) {
-			bestGeneSelection(dataset1);
-			uniformCrossover();
-		}
-
 		/* get the total number of correct categorisations from the first fold */
-		int firstFoldTotal = testPopulation(dataset2);
-
-		/* generate an initial population using dataset1 */
-		generateNewPopulation();
-
-		/* run the genetic algorithm for the specified number of generations */
-		for (int generation = 0; generation < GENERATIONS; generation++) {
-			bestGeneSelection(dataset2);
-			uniformCrossover();
-		}
+		int firstFoldTotal = trainAndTestPopulation(dataset1, dataset2);
 
 		/* get the total number of correct categorisations from the second fold */
-		int secondFoldTotal = testPopulation(dataset1);
+		int secondFoldTotal = trainAndTestPopulation(dataset2, dataset1);
 
 		/* print the total number of correct categorisations and its percentage (the full percentage and to 2 d.p.) */
-		int totalCorrect = firstFoldTotal + secondFoldTotal;
-		double percentageCorrect = ((double) totalCorrect / (double) (dataset1.length + dataset2.length)) * 100;
-		System.out.println("Total correct: " + totalCorrect + "/" + (dataset1.length + dataset2.length) + " = "
-				+ Math.round(percentageCorrect * 100.0) / 100.0 + "% (" + percentageCorrect + "%)");
+		Utility.calculatePercentage(firstFoldTotal, secondFoldTotal, dataset1.length, dataset2.length);
+
+	}
+
+	/**
+	 * Helper function that trains the population on a training set,
+	 * then tests that population against the test set.
+	 * 
+	 * @param trainSet, the training set to form the population on
+	 * @param testSet, the set to test the newly formed population on
+	 * @return the number of correct categorisations for this fold
+	 */
+	private int trainAndTestPopulation(int[][] trainSet, int[][] testSet) {
+		/* generate an initial, randomised population */
+		generateNewPopulation();
+
+		/* loops for as many generations as specified */
+		for (int generation = 0; generation < GENERATIONS; generation++) {
+
+			/* run selection on the current population and then crossover */
+			bestGeneSelection(trainSet);
+			uniformCrossover();
+		}
+
+		/* after generations have finished, get the total number of correct categorisations from this fold */
+		int totalCorrect = testPopulation(testSet);
+
+		return totalCorrect;
 	}
 
 	/**

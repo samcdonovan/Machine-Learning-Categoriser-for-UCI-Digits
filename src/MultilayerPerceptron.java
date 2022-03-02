@@ -1,26 +1,25 @@
 
 /**
- * MultilayerPerceptron.java
+ * MultilayerPerceptron.java:
+ * 
  * 
  * @author Samuel C. Donovan
- * @created: 14/02/22
- * @updated: 03/03/22
- *
- * 
+ * @created 14/02/22
+ * @updated 03/03/22
  */
 public class MultilayerPerceptron {
 
 	static final int NUM_INPUTS = 2810; /* number of input features */
 	static final int NUM_FEATURE_VALS = 64; /* number of feature values for each input */
-	static final int NUM_HIDDEN = 10; /* number of hidden nodes */
+	static final int NUM_HIDDEN = 21; /* number of hidden nodes */
 	static final int NUM_OUTPUT = 10; /* number of output nodes */
 
-	static final int ITERATIONS = 100; /* maximum number of training iterations */
+	static final int ITERATIONS = 300; /* maximum number of training iterations */
 	static final double ERROR_THRESHOLD = 0.0001; /* threshold for training error */
 
-	static final double LEARNING_RATE = 0.01; /* low learning rate to avoid convergence */
+	static final double LEARNING_RATE = 0.1; /* relatively low learning rate to avoid convergence */
 
-	double[][] hiddenWeights = new double[64][NUM_HIDDEN]; /* weights for the hidden nodes */
+	double[][] hiddenWeights = new double[NUM_FEATURE_VALS][NUM_HIDDEN]; /* weights for the hidden nodes */
 	double[][] hiddenLayer = new double[NUM_INPUTS][NUM_HIDDEN]; /* hidden layer which stores the weighted sums from the inputs */
 	double[] hiddenBias = new double[NUM_HIDDEN]; /* the bias for each hidden node */
 
@@ -37,22 +36,25 @@ public class MultilayerPerceptron {
 	 * @param dataset2, the second dataset
 	 */
 	public void twoFold(int[][] dataset1, int[][] dataset2) {
+		int firstFoldTotal = trainAndTestMLP(dataset1, dataset2);
+		
 
-		initialise(); /* set weights and biases */
-		train(dataset1);
-		int firstFoldTotal = test(dataset2); /* test on dataset2 */
-		System.out.println("First fold : " + firstFoldTotal + "/" + dataset1.length);
-		
-		initialise();
-		train(dataset2);
-		int secondFoldTotal = test(dataset1); /* test on dataset1 */
-		System.out.println("Second fold : " + secondFoldTotal + "/" + dataset2.length);
-		
-		/* print the total number of correct categorisations and its percentage (the full percentage and to 2 d.p.) */
-		int totalCorrect = firstFoldTotal + secondFoldTotal;
-		double percentageCorrect = ((double) totalCorrect / (double) (dataset1.length + dataset2.length)) * 100;
-		System.out.println("\nTotal correct: " + totalCorrect + "/" + (dataset1.length + dataset2.length) + " = "
-				+ Math.round(percentageCorrect * 100.0) / 100.0 + "% (" + percentageCorrect + "%)");
+		int secondFoldTotal = trainAndTestMLP(dataset2, dataset1); /* test on dataset1 */
+
+
+		Utility.calculatePercentage(firstFoldTotal, secondFoldTotal, dataset1.length, dataset2.length);
+
+	}
+
+	private int trainAndTestMLP(int[][] trainSet, int[][] testSet) {
+
+		initialise(); /* randomise weights and set biases to 0 */
+
+		train(trainSet); /* train MLP weights on trainSet */
+
+		int totalCorrect = test(testSet); /* test on testSet */
+
+		return totalCorrect;
 	}
 
 	/**
@@ -60,7 +62,7 @@ public class MultilayerPerceptron {
 	*/
 	private void initialise() {
 
-		hiddenWeights = new double[64][NUM_HIDDEN]; /* weights for the hidden nodes */
+		hiddenWeights = new double[NUM_FEATURE_VALS][NUM_HIDDEN]; /* weights for the hidden nodes */
 		hiddenLayer = new double[NUM_INPUTS][NUM_HIDDEN]; /* hidden layer which stores the weighted sums from the inputs */
 		hiddenBias = new double[NUM_HIDDEN]; /* the bias for each hidden node */
 
@@ -95,13 +97,13 @@ public class MultilayerPerceptron {
 	}
 
 	/**
-	 * Main function that carries forward passes through the MLP. Passes the input layer through
+	 * Main function for forward propagation through the MLP. Passes the input layer through
 	 * the hidden layer, and then through the output layer.
 	 * 
 	 * @param dataset, the current dataset (train or test)
 	 * @param currentInput, the index of the current row in the dataset
 	 */
-	private void forwardPassthrough(int[][] dataset, int currentInput) {
+	private void forwardPropagation(int[][] dataset, int currentInput) {
 
 		double weightedSum = 0.0;
 
@@ -116,28 +118,25 @@ public class MultilayerPerceptron {
 				   sum (stored in the hidden layer) */
 				weightedSum += dataset[currentInput][dataPoint] * hiddenWeights[dataPoint][hiddenNode];
 
-			
 			}
-		
 
 			hiddenLayer[currentInput][hiddenNode] = sigmoidFunction(weightedSum + hiddenBias[hiddenNode], !derivative);
-		
+
 		}
 
-		
 		/* loop through every output node */
 		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
 			weightedSum = 0.0;
 			for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
-			
+
 				/* multiply the sigmoid value by the weight for the current output node, and add this 
 				   value to the weighted sum for that output node */
 				weightedSum += (hiddenLayer[currentInput][hiddenNode] * outputWeights[hiddenNode][outputNode]);
-				
+
 			}
 
 			outputLayer[currentInput][outputNode] = sigmoidFunction(weightedSum + outputBias[outputNode], !derivative);
-	
+
 		}
 
 	}
@@ -161,7 +160,7 @@ public class MultilayerPerceptron {
 			actualCategory = testSet[currentInput][testSet[currentInput].length - 1];
 
 			/* pass the current row through the layers */
-			forwardPassthrough(testSet, currentInput);
+			forwardPropagation(testSet, currentInput);
 
 			/* find the highest probability in the output layer, after the forward pass through */
 			currentBestIndex = findHighestInOutput(currentInput);
@@ -192,8 +191,8 @@ public class MultilayerPerceptron {
 			numIterations++;
 
 			for (int currentInput = 0; currentInput < trainingSet.length; currentInput++) {
-				forwardPassthrough(trainingSet, currentInput);
-				target = trainingSet[currentInput][64];
+				forwardPropagation(trainingSet, currentInput);
+				target = trainingSet[currentInput][trainingSet[currentInput].length - 1];
 				actual = findHighestInOutput(currentInput);
 				meanSquaredError += Math.pow(target - actual, 2);
 
@@ -214,7 +213,7 @@ public class MultilayerPerceptron {
 
 		int category = trainingSet[currentInput][trainingSet[currentInput].length - 1];
 		int target;
-		double sum = 0.0;
+		double weightedSum = 0.0;
 
 		boolean derivative = true;
 
@@ -226,12 +225,12 @@ public class MultilayerPerceptron {
 		}
 
 		for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
-			sum = 0;
+			weightedSum = 0;
 			for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
-				sum += outputWeights[hiddenNode][outputNode] * outputErrors[outputNode];
+				weightedSum += outputWeights[hiddenNode][outputNode] * outputErrors[outputNode];
 			}
 
-			hiddenErrors[hiddenNode] = sum * sigmoidFunction(hiddenLayer[currentInput][hiddenNode], derivative);
+			hiddenErrors[hiddenNode] = weightedSum * sigmoidFunction(hiddenLayer[currentInput][hiddenNode], derivative);
 
 		}
 
