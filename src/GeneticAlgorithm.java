@@ -1,15 +1,14 @@
 
 /**
- * GeneticAlgorithm.java
- * 
- * @author Samuel C. Donovan
- * Created: 31/01/22
- * Updated: 25/02/22
- *
+ * GeneticAlgorithm.java:
  * Genetic algorithm that categorises UCI digits. The fitness function uses
  * Euclidean distance to find the row in the dataset that is closest to the gene.
  * Various crossover and selection techniques have been implemented, though the best 
- * achieved ~65% accuracy (simple best genes selection and uniform crossover).
+ * achieved ~70.4% accuracy (simple best genes selection and uniform crossover).
+ * 
+ * @author Samuel C. Donovan
+ * @created 31/01/22
+ * @updated 25/02/22
  */
 public class GeneticAlgorithm {
 
@@ -110,7 +109,7 @@ public class GeneticAlgorithm {
 			for (int datasetSection = 0; datasetSection < dataset.length; datasetSection += 10) {
 				for (int datasetPos = datasetSection; datasetPos < datasetSection + 10; datasetPos++) {
 
-					currentDist = euclideanDistance(currentRow, dataset[datasetPos]);
+					currentDist = Utility.euclideanDistance(currentRow, dataset[datasetPos]);
 
 					/* if the distance between the two rows from each dataset is smaller than the current
 					 * minimum distance, set minimum distance to this new distance and save the position in minPos*/
@@ -128,25 +127,6 @@ public class GeneticAlgorithm {
 			}
 		}
 		return fitness;
-	}
-
-	/**
-	 * Euclidean distance calculator, calculates distance
-	 * between two rows of data from the dataset 
-	 * 
-	 * @param gene, the gene whose distance is to be calculated
-	 * @param datasetRow, the row in the dataset to compare against
-	 * @return double, the Euclidean distance between each row
-	 */
-	private double euclideanDistance(int[] gene, int[] datasetRow) {
-
-		int sum = 0;
-
-		/* sums the distance between each point in both arrays */
-		for (int pos = 0; pos < gene.length - 1; pos++)
-			sum += ((gene[pos] - datasetRow[pos]) * (gene[pos] - datasetRow[pos]));
-
-		return Math.sqrt(sum);
 	}
 
 	/**

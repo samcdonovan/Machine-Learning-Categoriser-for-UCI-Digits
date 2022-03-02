@@ -3,17 +3,12 @@
  * MultilayerPerceptron.java
  * 
  * @author Samuel C. Donovan
- * Created: 14/02/22
- * Updated: 03/03/22
+ * @created: 14/02/22
+ * @updated: 03/03/22
  *
  * 
  */
 public class MultilayerPerceptron {
-
-	boolean FIRST = true;
-	boolean SECOND = true;
-	boolean THIRD = true;
-	boolean FOURTH = true;
 
 	static final int NUM_INPUTS = 2810; /* number of input features */
 	static final int NUM_FEATURE_VALS = 64; /* number of feature values for each input */
@@ -44,17 +39,19 @@ public class MultilayerPerceptron {
 	public void twoFold(int[][] dataset1, int[][] dataset2) {
 
 		initialise(); /* set weights and biases */
-
 		train(dataset1);
 		int firstFoldTotal = test(dataset2); /* test on dataset2 */
-
+		System.out.println("First fold : " + firstFoldTotal + "/" + dataset1.length);
+		
+		initialise();
 		train(dataset2);
 		int secondFoldTotal = test(dataset1); /* test on dataset1 */
-
+		System.out.println("Second fold : " + secondFoldTotal + "/" + dataset2.length);
+		
 		/* print the total number of correct categorisations and its percentage (the full percentage and to 2 d.p.) */
 		int totalCorrect = firstFoldTotal + secondFoldTotal;
 		double percentageCorrect = ((double) totalCorrect / (double) (dataset1.length + dataset2.length)) * 100;
-		System.out.println("Total correct: " + totalCorrect + "/" + (dataset1.length + dataset2.length) + " = "
+		System.out.println("\nTotal correct: " + totalCorrect + "/" + (dataset1.length + dataset2.length) + " = "
 				+ Math.round(percentageCorrect * 100.0) / 100.0 + "% (" + percentageCorrect + "%)");
 	}
 
@@ -119,63 +116,28 @@ public class MultilayerPerceptron {
 				   sum (stored in the hidden layer) */
 				weightedSum += dataset[currentInput][dataPoint] * hiddenWeights[dataPoint][hiddenNode];
 
-				/* REMOVE */
-				if (SECOND && (Double.isNaN(hiddenWeights[dataPoint][hiddenNode])
-						|| Double.isNaN(dataset[currentInput][dataPoint]) || Double.isNaN(weightedSum))) {
-					// FIRST = true;
-					SECOND = false;
-					System.out.println("weighted " + dataset[currentInput][dataPoint] + " * "
-							+ hiddenWeights[dataPoint][hiddenNode] + " = "
-							+ dataset[currentInput][dataPoint] * hiddenWeights[dataPoint][hiddenNode]);
-				}
-
+			
 			}
-			/*if (Double.isNaN(hiddenLayer[currentInput][hiddenNode]))
-				System.out.println(
-						currentInput + " " + hiddenNode + " : " + weightedSum + hiddenLayer[currentInput][hiddenNode]);
-						*/
-			// System.out.println(hiddenBias[hiddenNode]);
-			// if (FIRST)System.out.println(weightedSum);
-			if (FIRST && (Double.isNaN(hiddenLayer[currentInput][hiddenNode]) || Double.isNaN(weightedSum)
-					|| Double.isNaN(hiddenBias[hiddenNode]))) {
-				System.out.println("pass weightedSum " + hiddenLayer[currentInput][hiddenNode] + " " + weightedSum + " "
-						+ hiddenBias[hiddenNode]);
-			}
+		
 
 			hiddenLayer[currentInput][hiddenNode] = sigmoidFunction(weightedSum + hiddenBias[hiddenNode], !derivative);
-			// if (hiddenLayer[currentInput][hiddenNode] == 0)
-			// System.out.println(hiddenNode);
+		
 		}
 
-		// hiddenLayer[currentInput][hiddenNode] = sigmoidTransfer(
-		// hiddenLayer[currentInput][hiddenNode] + hiddenBias[hiddenNode],
-		// false);
-		/* loop through every every hidden node */
-
+		
 		/* loop through every output node */
 		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
 			weightedSum = 0.0;
 			for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
-				/* calculate the sigmoid value of the weighted sum of all inputs (plus bias) for the current hidden node */
-				// sigmoidVal =
-				// sigmoidTransfer(hiddenLayer[currentInput][hiddenNode] +
-				// hiddenBias[hiddenNode], false);
-				// System.out.println(sigmoidVal);
-				// System.out.println("b" +
-				// outputLayer[currentInput][outputNode]);
+			
 				/* multiply the sigmoid value by the weight for the current output node, and add this 
 				   value to the weighted sum for that output node */
 				weightedSum += (hiddenLayer[currentInput][hiddenNode] * outputWeights[hiddenNode][outputNode]);
-				// System.out.println("a"+outputLayer[currentInput][outputNode]);
-				// if (Double.isNaN(outputLayer[currentInput][outputNode]))
-				// System.out.println(currentInput + " " + outputNode + " " +
-				// outputLayer[currentInput][outputNode]);
+				
 			}
 
 			outputLayer[currentInput][outputNode] = sigmoidFunction(weightedSum + outputBias[outputNode], !derivative);
-			/*	if(Double.isNaN(outputLayer[currentInput][outputNode]))
-					System.out.println(currentInput + " " + outputNode +" : " + weightedSum + outputLayer[currentInput][outputNode]);
-			*/
+	
 		}
 
 	}
@@ -219,146 +181,88 @@ public class MultilayerPerceptron {
 		}
 	*/
 
-	private double gradientDescentHidden(int inputVal, double hiddenVal, double outputDelta) {
-
-		double hiddenDelta = hiddenVal * (1 - hiddenVal) * outputDelta;
-		return LEARNING_RATE * inputVal * hiddenDelta;
-		/*-(LEARNING_RATE * outputLayer[currentInput][outputNode]
-							* ((outputLayer[currentInput][outputNode] - outputNode)
-									* outputLayer[currentInput][outputNode]
-									* (1 - outputLayer[currentInput][outputNode])));
-									 */
-	}
-
 	private void train(int[][] trainingSet) {
-		double mse = 0.0;
+		double meanSquaredError = 0.0;
 		int numIterations = 0;
 		int target, actual;
 		double[][] errorGradients = new double[2][];
 
-		System.out.println("\nHIDDEN");
-		for (int currentInput = 0; currentInput < 64; currentInput++) {
-
-			for (int i = 0; i < hiddenWeights[currentInput].length; i++) {
-				System.out.print(hiddenWeights[currentInput][i] + " ");
-			}
-
-		}
-		System.out.println("\nOUTPUT");
-		for (int currentInput = 0; currentInput < outputWeights.length; currentInput++) {
-
-			for (int i = 0; i < outputWeights[currentInput].length; i++) {
-				System.out.print(outputWeights[currentInput][i] + " ");
-			}
-		}
-
 		do {
-			mse = 0.0;
+			meanSquaredError = 0.0;
 			numIterations++;
 
 			for (int currentInput = 0; currentInput < trainingSet.length; currentInput++) {
 				forwardPassthrough(trainingSet, currentInput);
 				target = trainingSet[currentInput][64];
 				actual = findHighestInOutput(currentInput);
-				mse += Math.pow(target - actual, 2);
+				meanSquaredError += Math.pow(target - actual, 2);
 
 				errorGradients = error(trainingSet, currentInput);
-				/*for(int i = 0 ; i< errorGradients.length; i++){
-					for(int j = 0; j < errorGradients[i].length; j++)
-						System.out.print(errorGradients[i][j] + " ");
-				System.out.println();
-				}*/
+
 				weightUpdate(trainingSet, currentInput, errorGradients);
 			}
 			// System.out.println(test(trainingSet));
-		} while (mse > ERROR_THRESHOLD && numIterations < ITERATIONS);
+			meanSquaredError = meanSquaredError / NUM_INPUTS * 2;
+			// System.out.println(meanSquaredError);
+		} while (meanSquaredError > ERROR_THRESHOLD && numIterations < ITERATIONS);
 
-		System.out.println("\nHIDDEN");
-		for (int currentInput = 0; currentInput < 64; currentInput++) {
-
-			for (int i = 0; i < hiddenWeights[currentInput].length; i++) {
-				System.out.print(hiddenWeights[currentInput][i] + " ");
-			}
-
-		}
-		System.out.println("\nOUTPUT");
-		for (int currentInput = 0; currentInput < outputWeights.length; currentInput++) {
-
-			for (int i = 0; i < outputWeights[currentInput].length; i++) {
-				System.out.print(outputWeights[currentInput][i] + " ");
-			}
-		}
-		System.out.println();
 	}
 
 	private double[][] error(int[][] trainingSet, int currentInput) {
 		double[] outputErrors = new double[NUM_OUTPUT];
 		double[] hiddenErrors = new double[NUM_HIDDEN];
 
-		int category = trainingSet[currentInput][64];
+		int category = trainingSet[currentInput][trainingSet[currentInput].length - 1];
 		int target;
 		double sum = 0.0;
 
-		int actual = findHighestInOutput(currentInput);
 		boolean derivative = true;
 
-		for (int neuron = 0; neuron < NUM_OUTPUT; neuron++) {
-			target = neuron == category ? 1 : 0;
-			/* COULD TRY LAYER OUTPUT (DECIMAL) - TARGET */
-			// System.out.println(target + " - " +
-			// outputLayer[currentInput][neuron]+ " = " +
-			// (target-outputLayer[currentInput][neuron]) + " * " + );
+		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
+			target = outputNode == category ? 1 : 0;
 
-			outputErrors[neuron] = (target - outputLayer[currentInput][neuron])
-					* sigmoidFunction(outputLayer[currentInput][neuron], derivative);
+			outputErrors[outputNode] = (target - outputLayer[currentInput][outputNode])
+					* sigmoidFunction(outputLayer[currentInput][outputNode], derivative);
 		}
 
-		// for(int layer = 2; layer > 0; layer--){
 		for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
 			sum = 0;
 			for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
 				sum += outputWeights[hiddenNode][outputNode] * outputErrors[outputNode];
 			}
-			// errorGradients[1][hiddenNode] = sum *
-			// errorGradients[2][hiddenNode];
-			// System.out.println(sum);
+
 			hiddenErrors[hiddenNode] = sum * sigmoidFunction(hiddenLayer[currentInput][hiddenNode], derivative);
-			// outputLayer[currentInput][hiddenNode];
+
 		}
-		/*	
-		for(int i = 0 ; i< outputErrors.length; i++)
-				System.out.print(outputErrors[i] + " ");
-			System.out.println();
-					for(int j = 0; j < hiddenErrors.length; j++)
-						System.out.print(hiddenErrors[1] + " ");
-				System.out.println();
-				
-		*/
+
 		return new double[][] { outputErrors, hiddenErrors };
 	}
 
-	private void weightUpdate(int[][] trainingSet, int currentInput, double[][] errors) {
-		double delta;
+	private void weightUpdate(int[][] trainingSet, int currentInput, double[][] gradientErrors) {
+		double currentWeightChange;
+
 		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
-			delta = LEARNING_RATE * errors[0][outputNode];
-			outputBias[outputNode] += delta;
+			currentWeightChange = LEARNING_RATE * gradientErrors[0][outputNode];
+
 			for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
-				outputWeights[hiddenNode][outputNode] += delta * hiddenLayer[currentInput][outputNode];
+				outputWeights[hiddenNode][outputNode] += currentWeightChange * hiddenLayer[currentInput][outputNode];
 			}
+			outputBias[outputNode] += currentWeightChange;
 		}
 		for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
-			delta = LEARNING_RATE * errors[1][hiddenNode];
-			hiddenBias[hiddenNode] += delta;
+			currentWeightChange = LEARNING_RATE * gradientErrors[1][hiddenNode];
+
 			for (int dataPoint = 0; dataPoint < NUM_FEATURE_VALS; dataPoint++) {
-				hiddenWeights[dataPoint][hiddenNode] += delta * trainingSet[currentInput][dataPoint];
-				// hiddenLayer[currentInput][hiddenNode];
+				hiddenWeights[dataPoint][hiddenNode] += currentWeightChange * trainingSet[currentInput][dataPoint];
+
 			}
+			hiddenBias[hiddenNode] += currentWeightChange;
 
 		}
 	}
 
 	/**
-	 * Sigmoid transfer function that also handles the Sigmoid derivative
+	 * Sigmoid function that handles both the Sigmoid transfer and the Sigmoid derivative
 	 * 
 	 * @param dotProduct to be passed into the sigmoid transfer 
 	 * @param derivative, boolean check to determine whether or not the derivative 
@@ -367,30 +271,10 @@ public class MultilayerPerceptron {
 	 */
 	private double sigmoidFunction(double dotProduct, boolean derivative) {
 
-		if (FOURTH && Double.isNaN(dotProduct * (1 - dotProduct))) {
-			FOURTH = false;
-			System.out.println("sigderiv " + dotProduct + " " + dotProduct * (1 - dotProduct) + " " + derivative);
-		}
-		if (Double.isNaN(Math.exp(-dotProduct)) && FIRST) {
-			FIRST = false;
-			System.out.print("sig " + dotProduct + " " + derivative + "\n");
-		}
-
-		return derivative ? dotProduct * (1 - dotProduct) : (1 / (1 + Math.exp(-dotProduct)));
-
 		/* if the derivative needs to be used, the value of the sigmoid of the dot product
 		   is retrieved, and then passed into the derived sigmoid function */
-		/*	if (derivative) {
-				double sigmoid = sigmoidTransfer(dotProduct, false);
-				return sigmoid * (1 - sigmoid);
-			}
-			/*
-			if(Double.isNaN((1 / (1 + Math.exp(-dotProduct)))))
-				System.out.println("DOT = " + dotProduct + " exp = " +Math.exp(-dotProduct));
-				
-			// System.out.println(1 / (1 + Math.exp(-dotProduct)));
-			/* return the value of the sigmoid of the dot product */
-		// return (1 / (1 + Math.exp(-dotProduct)));
+		return derivative ? dotProduct * (1 - dotProduct) : (1 / (1 + Math.exp(-dotProduct)));
+
 	}
 
 	/**

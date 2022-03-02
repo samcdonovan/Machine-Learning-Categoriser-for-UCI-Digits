@@ -1,13 +1,12 @@
 
 /**
- * NearestNeighbour.java
- * 
- * @author Samuel C. Donovan
- * Created: 17/01/22
- * Updated: 06/02/22
- * 
+ * NearestNeighbour.java:
  * Nearest neighbour (using Euclidean distance) solution 
  * to the UCI digits task. Achieves ~98.3% accuracy
+ * 
+ * @author Samuel C. Donovan
+ * @created 17/01/22
+ * @updated 06/02/22
  */
 public class NearestNeighbour {
 
@@ -67,7 +66,8 @@ public class NearestNeighbour {
 			 * retrieving the nearest neighbour to the current row from dataset1 */
 			for (int dataset2Pos = 0; dataset2Pos < dataset2.length; dataset2Pos++) {
 
-				currentDist = euclideanDistance(dataset1[dataset1Pos], dataset2[dataset2Pos]);
+				/* use Euclidean distance function from Utility class to calculate distance */
+				currentDist = Utility.euclideanDistance(dataset1[dataset1Pos], dataset2[dataset2Pos]);
 
 				/* if the distance between the two rows from each dataset is smaller than the current
 				 * minimum distance, set minimum distance to this new distance and save the position in minPos*/
@@ -86,23 +86,4 @@ public class NearestNeighbour {
 		return numCorrect;
 	}
 
-	/**
-	 * Euclidean distance calculator, calculates distance
-	 * between two rows of data from the dataset 
-	 * 
-	 * @param trainRow, array representing a row in the training set
-	 * @param testRow, array representing a row in the test set
-	 * @return the Euclidean distance between each row
-	 */
-	private static double euclideanDistance(int[] trainRow, int[] testRow) {
-
-		int sum = 0;
-
-		/* sums the distance between each point in both arrays */
-		for (int pos = 0; pos < trainRow.length - 1; pos++)
-			sum += ((trainRow[pos] - testRow[pos]) * (trainRow[pos] - testRow[pos]));
-
-		/* return the square root of the sum, the distance between both arrays */
-		return Math.sqrt(sum);
-	}
 }
