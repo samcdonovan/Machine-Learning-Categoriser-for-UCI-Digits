@@ -15,7 +15,7 @@ public class GeneticAlgorithm {
 	private static final int POPULATION_SIZE = 40; /* size of the population */
 	private static final int GENE_LENGTH = 640; /* length of each gene in the population */
 	private static final int GENERATIONS = 300; /* number of generations for breeding */
-	private static final double MUTATION_RATE = 2; /* rate at which each gene mutates */
+	private static final double MUTATION_RATE = 2.0; /* rate at which each gene mutates */
 
 	int[][] population = new int[POPULATION_SIZE][GENE_LENGTH]; /* 2D array that holds the current population */
 	int[][] tempPopulation = new int[POPULATION_SIZE][GENE_LENGTH]; /* 2D array created from gene selection techniques */
@@ -30,6 +30,13 @@ public class GeneticAlgorithm {
 	 */
 	public void twoFold(int[][] dataset1, int[][] dataset2) {
 
+		/* if the paramaters are currently being tested/experimented with, 
+		   start a timer for the algorithm. This is to measure running time */
+		long startTime;
+		if (Utility.PARAMATER_TESTING) {
+			startTime = System.nanoTime(); /* start the timer */
+		}
+
 		/* get the total number of correct categorisations from the first fold */
 		int firstFoldTotal = trainAndTestPopulation(dataset1, dataset2);
 
@@ -38,6 +45,16 @@ public class GeneticAlgorithm {
 
 		/* print the total number of correct categorisations and its percentage (the full percentage and to 2 d.p.) */
 		Utility.calculatePercentage(firstFoldTotal, secondFoldTotal, dataset1.length, dataset2.length);
+
+		/* if the GA parameters are currently being tested, calculate running time of the algorithm */
+		if (Utility.PARAMATER_TESTING) {
+			long endTime = System.nanoTime();
+			long totalTime = endTime - startTime;
+
+			double seconds = (double) totalTime / 1000000000.0;
+
+			System.out.println("Running time = " + totalTime + " nano seconds, " + seconds + " seconds");
+		}
 
 	}
 

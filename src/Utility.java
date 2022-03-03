@@ -13,6 +13,8 @@ import java.io.IOException;
  */
 public class Utility {
 
+	public static final boolean PARAMATER_TESTING = false;
+	
 	/**
 	 * Reads data from file path and puts it into a 2D int array
 	 * 
