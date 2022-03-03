@@ -2,7 +2,7 @@
 /**
  * MultilayerPerceptron.java:
  * MLP that uses a Sigmoid transfer/activation function and 
- * an MSE loss function. Achieves in the range of 90% to 93% but
+ * an MSE loss function. Achieves accuracy in the range of 90% to 93% but
  * the best recorded is ~93.59%.
  * 
  * @author Samuel C. Donovan
@@ -16,7 +16,7 @@ public class MultilayerPerceptron {
 	static final int NUM_HIDDEN = 60; /* number of hidden nodes */
 	static final int NUM_OUTPUT = 10; /* number of output nodes */
 
-	static final int ITERATIONS = 400; /* maximum number of training iterations */
+	static final int MAX_EPOCHS = 400; /* maximum number of training epochs */
 	static final double ERROR_THRESHOLD = 0.001; /* threshold for training error */
 
 	static final double LEARNING_RATE = 0.1; /* relatively low learning rate to avoid convergence */
@@ -39,14 +39,14 @@ public class MultilayerPerceptron {
 	 * @return the percentage of correct categorisations
 	 */
 	public double twoFold(int[][] dataset1, int[][] dataset2) {
-	
+
 		/* if the paramaters are currently being tested/experimented with, 
 		   start a timer for the algorithm. This is to measure running time */
 		long startTime;
 		if (Utility.MLP_PARAMATER_TESTING) {
 			startTime = System.nanoTime(); /* start the timer */
 		}
-		
+
 		/* get total correct categorisations from first fold */
 		int firstFoldTotal = trainAndTestMLP(dataset1, dataset2);
 
@@ -54,16 +54,15 @@ public class MultilayerPerceptron {
 		int secondFoldTotal = trainAndTestMLP(dataset2, dataset1);
 
 		/* print the total number of correct categorisations and its percentage (the full percentage and to 2 d.p.) */
-		double percentCorrect =  Utility.calculatePercentage(firstFoldTotal, secondFoldTotal, dataset1.length, dataset2.length);
-				
+		double percentCorrect = Utility.calculatePercentage(firstFoldTotal, secondFoldTotal, dataset1.length,
+				dataset2.length);
+
 		/* if the MLP parameters are currently being tested, calculate running time of the algorithm */
 		if (Utility.MLP_PARAMATER_TESTING) {
 			long endTime = System.nanoTime();
 			long totalTime = endTime - startTime;
 
-			double seconds = (double) totalTime / 1000000000.0;
-
-			System.out.println("Running time = " + totalTime + " nano seconds, " + seconds + " seconds");
+			System.out.println("Running time = " + totalTime + " nano seconds");
 		}
 
 		return percentCorrect;
@@ -124,181 +123,50 @@ public class MultilayerPerceptron {
 	}
 
 	/**
-	 * Main function for forward propagation through the MLP. Passes the input layer through
-	 * the hidden layer, and then through the output layer.
-	 * 
-	 * @param dataset, the current dataset (train or test)
-	 * @param currentInput, the index of the current row in the dataset
-	 */
-	private void forwardPropagation(int[][] dataset, int currentInput) {
-
-		double weightedSum = 0.0;
-
-		boolean derivative = true; /*  */
-		boolean forwardPropagate = true;
-
-		/* loop through every hidden node in the MLP */
-		for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
-
-			/* get the weighted sum to passed into the sigmoid function at the current hidden node */
-			weightedSum = getWeightedSum(inputToHiddenWeights, hiddenNode, dataset[currentInput].length - 1,
-					dataset[currentInput]);
-
-			weightedSum += hiddenBias[hiddenNode]; /* add hidden bias to the weighted sum */
-
-			/* pass the weighted sum into the sigmoid transfer function (not derivative) */
-			hiddenLayer[currentInput][hiddenNode] = sigmoidFunction(weightedSum, !derivative);
-
-		}
-
-		/* loop through every output node */
-		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
-
-			/* get the weighted sum to passed into the sigmoid function at the current output node */
-			weightedSum = getWeightedSum(hiddenToOutputWeights, outputNode, NUM_HIDDEN, hiddenLayer[currentInput],
-					forwardPropagate);
-
-			weightedSum += outputBias[outputNode]; /* add output bias to the weighted sum */
-
-			/* pass the weighted sum into the sigmoid transfer function (not derivative) */
-			outputLayer[currentInput][outputNode] = sigmoidFunction(weightedSum, !derivative);
-
-		}
-	}
-
-	/**
 	 * Trains the MLP by passing the training set through the MLP, and updating
-	 * the weights with each iteration.
+	 * the weights with each epoch.
 	 * 
 	 * @param trainingSet, dataset to train the MLP on
 	 */
 	private void train(int[][] trainingSet) {
-		double meanSquaredError = 0.0;
-		int numIterations = 0;
-		int actualOutput;
-		double[][] errorGradients = new double[2][];
-		int target;
 
+		/* values to determine when to stop backpropagating */
+		double meanSquaredError = 0.0;
+		int numEpochs = 0;
+
+		double[][] errorGradients; /* 2D array to hold error gradients for hidden and output nodes */
+		int target, actualOutput;
+
+		/* do while loop to ensure it runs at least once */
 		do {
 			meanSquaredError = 0.0;
-			numIterations++;
+			numEpochs++;
 
 			/* loop through every row of the training set and train the weights of the MLP */
-			for (int currentInput = 0; currentInput < trainingSet.length; currentInput++) {
+			for (int currentRow = 0; currentRow < trainingSet.length; currentRow++) {
 
-				forwardPropagation(trainingSet, currentInput); /* pass the current row forward through the layers */
-
-				actualOutput = findHighestInOutput(
-						currentInput); /* get the output category after forward propagation */
+				forwardPropagation(trainingSet, currentRow); /* pass the current row forward through the layers */
 
 				/* calculate error gradients for output and hidden layers, used for updating weights */
-				errorGradients = calculateErrorGradients(trainingSet, currentInput);
+				errorGradients = calculateErrorGradients(trainingSet, currentRow);
 
-				weightUpdate(trainingSet, currentInput,
-						errorGradients); /* update weights and biases using error gradients */
+				/* update weights and biases using error gradients */
+				weightUpdate(trainingSet, currentRow, errorGradients);
 
-				target = actualOutput == trainingSet[currentInput][trainingSet[currentInput].length - 1] ? 1 : 0;
+				actualOutput = getPredictedOutput(currentRow); /* get the predicted output after forward propagation */
+
+				/* if the actual output is correct, target is 1, otherwise its 0 */
+				target = actualOutput == trainingSet[currentRow][NUM_FEATURE_VALS] ? 1 : 0;
+
 				/* update mean squared error */
-				meanSquaredError += Math.pow(target - outputLayer[currentInput][actualOutput], 2);
+				meanSquaredError += Math.pow(target - outputLayer[currentRow][actualOutput], 2);
 			}
 
+			/* take the mean of the squared error */
 			meanSquaredError = meanSquaredError / NUM_INPUTS * 2;
 
-		} while (meanSquaredError > ERROR_THRESHOLD && numIterations < ITERATIONS);
-
-	}
-
-	/**
-	 * Calculates error gradients for output and hidden layers
-	 * 
-	 * @param trainingSet, the current training set
-	 * @param currentInput, the index for the current row of the training set
-	 * @return a 2D array containing all of the output and hidden error gradients
-	 */
-	private double[][] calculateErrorGradients(int[][] trainingSet, int currentInput) {
-		double[] outputErrors = new double[NUM_OUTPUT];
-		double[] hiddenErrors = new double[NUM_HIDDEN];
-
-		int category = trainingSet[currentInput][trainingSet[currentInput].length - 1];
-		int target;
-		double weightedSum = 0.0;
-
-		int actual = findHighestInOutput(currentInput);
-		int error = actual != category ? 1 : 0;
-		boolean derivative = true;
-		boolean forwardPropagate = true;
-
-		// if (actual != category) {
-		/* loop through every node in the output layer */
-		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
-			/* if the current node is equal to the category for this row of data,  */
-			target = outputNode == category ? 1 : 0;
-
-			/* calculate error gradient for the current output node using the sigmoid derivative */
-			outputErrors[outputNode] = (target - outputLayer[currentInput][outputNode]) * error
-					* sigmoidFunction(outputLayer[currentInput][outputNode], derivative);
-		}
-
-		/* loop through every node in the hidden layer */
-		for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
-
-			/* calculate weighted sum of output error gradients multiplied by 
-			 * the weight of the current hidden node (connected to the corresponding output node) */
-			weightedSum = getWeightedSum(hiddenToOutputWeights, hiddenNode, NUM_OUTPUT, outputErrors,
-					!forwardPropagate);
-
-			/* calculate hidden error gradient by multiplying weighted sum by the sigmoid derivative */
-			hiddenErrors[hiddenNode] = weightedSum * error
-					* sigmoidFunction(hiddenLayer[currentInput][hiddenNode], derivative);
-
-		}
-		// }
-		/* return arrays containing the error gradients */
-		return new double[][] { outputErrors, hiddenErrors };
-	}
-
-	/**
-	 * Update the weights in the MLP using pre-calculated error gradients for 
-	 *  
-	 * @param trainingSet, current training set
-	 * @param currentInput, index of current row in training set
-	 * @param gradientErrors, error gradients, calculated prior to updating weights
-	 */
-	private void weightUpdate(int[][] trainingSet, int currentInput, double[][] gradientErrors) {
-		double currentWeightChange;
-		int outputErrors = 0, hiddenErrors = 1;
-
-		/* update hidden to output weights and output bias */
-		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
-
-			/* calculate weight change for the current output node; learning rate multiplied
-			 * by the gradient error for this node */
-			currentWeightChange = LEARNING_RATE * gradientErrors[outputErrors][outputNode];
-
-			for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++)
-				/* update hidden to output weights by adding the current weight change multiplied by
-				   the value at the hidden node (this will be sigmoid value) */
-				hiddenToOutputWeights[hiddenNode][outputNode] += hiddenLayer[currentInput][outputNode]
-						* currentWeightChange;
-
-			/* update output bias at current output node */
-			outputBias[outputNode] += currentWeightChange;
-		}
-
-		/* update input to hidden weights and hidden bias */
-		for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
-			/* calculate weight change */
-			currentWeightChange = LEARNING_RATE * gradientErrors[hiddenErrors][hiddenNode];
-
-			for (int dataPoint = 0; dataPoint < NUM_FEATURE_VALS; dataPoint++)
-				/* update input to hidden weight by adding current weight change multiplied
-				 * by the feature value at the current position in the dataset row */
-				inputToHiddenWeights[dataPoint][hiddenNode] += trainingSet[currentInput][dataPoint]
-						* currentWeightChange;
-
-			/* update hidden bias at current node */
-			hiddenBias[hiddenNode] += currentWeightChange;
-		}
+			/* loop while squared error is above the threshold and max epochs hasn't been reached yet */
+		} while (meanSquaredError > ERROR_THRESHOLD && numEpochs < MAX_EPOCHS);
 	}
 
 	/**
@@ -314,16 +182,16 @@ public class MultilayerPerceptron {
 		int actualCategory;
 
 		/* loop through every row of the test dataset */
-		for (int currentInput = 0; currentInput < testSet.length; currentInput++) {
+		for (int currentRow = 0; currentRow < testSet.length; currentRow++) {
 
 			/* get the category for the current row (last element of the row */
-			actualCategory = testSet[currentInput][testSet[currentInput].length - 1];
+			actualCategory = testSet[currentRow][testSet[currentRow].length - 1];
 
 			/* forward feed the current row through the MLP layers */
-			forwardPropagation(testSet, currentInput);
+			forwardPropagation(testSet, currentRow);
 
 			/* find the highest probability in the output layer, after the forward pass through */
-			currentBestIndex = findHighestInOutput(currentInput);
+			currentBestIndex = getPredictedOutput(currentRow);
 
 			/* if the index of the highest probability matches the actual category of the row,
 			 * the categorisation was correct */
@@ -332,6 +200,144 @@ public class MultilayerPerceptron {
 		}
 
 		return correctCount;
+	}
+
+	/**
+	 * Main function for forward propagation through the MLP. Passes the input layer through
+	 * the hidden layer, and then through the output layer.
+	 * 
+	 * @param dataset, the current dataset (train or test)
+	 * @param currentRow, the index of the current row in the dataset
+	 */
+	private void forwardPropagation(int[][] dataset, int currentRow) {
+
+		double weightedSum = 0.0;
+
+		boolean transfer = false; /* boolean for sigmoid function, false = transfer, true = derivative */
+		boolean forwardPropagate = true; /* boolean for weighted sum function */
+
+		/* loop through every hidden node in the MLP */
+		for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
+
+			/* get the weighted sum for all feature values in the current row of data multiplied
+			 * by the weight connecting that input with the current hidden node  */
+			weightedSum = getWeightedSum(inputToHiddenWeights, hiddenNode, NUM_FEATURE_VALS, dataset[currentRow]);
+
+			weightedSum += hiddenBias[hiddenNode]; /* add hidden bias to the weighted sum */
+
+			/* pass the weighted sum into the sigmoid transfer function (not derivative) */
+			hiddenLayer[currentRow][hiddenNode] = sigmoidFunction(weightedSum, transfer);
+
+		}
+
+		/* loop through every output node */
+		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
+
+			/* get the weighted sum for all hidden node outputs in the hidden layer multiplied 
+			 * by the weight connecting that node with the current output node  */
+			weightedSum = getWeightedSum(hiddenToOutputWeights, outputNode, NUM_HIDDEN, hiddenLayer[currentRow],
+					forwardPropagate);
+
+			weightedSum += outputBias[outputNode]; /* add output bias to the weighted sum */
+
+			/* pass the weighted sum into the sigmoid transfer function (not derivative) */
+			outputLayer[currentRow][outputNode] = sigmoidFunction(weightedSum, transfer);
+
+		}
+	}
+
+	/**
+	 * Calculates error gradients for output and hidden layers
+	 * 
+	 * @param trainingSet, the current training set
+	 * @param currentRow, the index for the current row of the training set
+	 * @return a 2D array containing all of the output and hidden error gradients
+	 */
+	private double[][] calculateErrorGradients(int[][] trainingSet, int currentRow) {
+		double[] outputErrors = new double[NUM_OUTPUT];
+		double[] hiddenErrors = new double[NUM_HIDDEN];
+
+		/* get the category for the current row in the dataset */
+		int category = trainingSet[currentRow][NUM_FEATURE_VALS];
+		int predicted = getPredictedOutput(currentRow); /* get predicted output */
+		int target;
+
+		/* if the predicted category does not match the actual category, there is an error,
+		 * so error = 1, otherwise it equals 0 */
+		int error = predicted != category ? 1 : 0;
+		double weightedSum = 0.0;
+
+		boolean derivative = true; /* boolean for sigmoid function so that it returns the derivative */
+		boolean backPropagate = false; /* boolean for weighted sum function, false = backpropagate, true = forward */
+
+		/* loop through every node in the output layer */
+		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
+			/* if the current node is equal to the category for this row of data,  */
+			target = outputNode == category ? 1 : 0;
+
+			/* calculate error gradient for the current output node using the sigmoid derivative */
+			outputErrors[outputNode] = (target - outputLayer[currentRow][outputNode]) * error
+					* sigmoidFunction(outputLayer[currentRow][outputNode], derivative);
+		}
+
+		/* loop through every node in the hidden layer */
+		for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
+
+			/* calculate weighted sum of output error gradients multiplied by 
+			 * the weight of the current hidden node (connected to the corresponding output node) */
+			weightedSum = getWeightedSum(hiddenToOutputWeights, hiddenNode, NUM_OUTPUT, outputErrors, backPropagate);
+
+			/* calculate hidden error gradient by multiplying weighted sum by the sigmoid derivative */
+			hiddenErrors[hiddenNode] = weightedSum * error
+					* sigmoidFunction(hiddenLayer[currentRow][hiddenNode], derivative);
+
+		}
+
+		/* return arrays containing the error gradients */
+		return new double[][] { outputErrors, hiddenErrors };
+	}
+
+	/**
+	 * Update the weights in the MLP using pre-calculated error gradients for 
+	 *  
+	 * @param trainingSet, current training set
+	 * @param currentRow, index of current row in training set
+	 * @param gradientErrors, error gradients, calculated prior to updating weights
+	 */
+	private void weightUpdate(int[][] trainingSet, int currentRow, double[][] gradientErrors) {
+		double currentWeightChange;
+		int outputErrors = 0, hiddenErrors = 1;
+
+		/* update hidden to output weights and output bias */
+		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
+
+			/* calculate weight change for the current output node; learning rate multiplied
+			 * by the gradient error for this node */
+			currentWeightChange = LEARNING_RATE * gradientErrors[outputErrors][outputNode];
+
+			for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++)
+				/* update hidden to output weights by adding the current weight change multiplied by
+				   the value at the hidden node (this will be sigmoid value) */
+				hiddenToOutputWeights[hiddenNode][outputNode] += hiddenLayer[currentRow][outputNode]
+						* currentWeightChange;
+
+			/* update output bias at current output node */
+			outputBias[outputNode] += currentWeightChange;
+		}
+
+		/* update input to hidden weights and hidden bias */
+		for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
+			/* calculate weight change */
+			currentWeightChange = LEARNING_RATE * gradientErrors[hiddenErrors][hiddenNode];
+
+			for (int dataPoint = 0; dataPoint < NUM_FEATURE_VALS; dataPoint++)
+				/* update input to hidden weight by adding current weight change multiplied
+				 * by the feature value at the current position in the dataset row */
+				inputToHiddenWeights[dataPoint][hiddenNode] += trainingSet[currentRow][dataPoint] * currentWeightChange;
+
+			/* update hidden bias at current node */
+			hiddenBias[hiddenNode] += currentWeightChange;
+		}
 	}
 
 	/**
@@ -362,7 +368,8 @@ public class MultilayerPerceptron {
 	}
 
 	/**
-	 * Calculates the weighted sum for inputs that are int (as opposed to double)
+	 * Calculates the weighted sum for inputs that are int (as opposed to double). This is used
+	 * when dealing with the inputs from the dataset, as they are int arrays.
 	 * 
 	 * @param weights, the weights to be used for the weighted sum
 	 * @param currentNode, current node in the layer
@@ -384,27 +391,29 @@ public class MultilayerPerceptron {
 	/**
 	 * Sigmoid function that handles both the Sigmoid transfer and the Sigmoid derivative
 	 * 
-	 * @param dotProduct to be passed into the sigmoid transfer 
+	 * @param input to be passed into the sigmoid transfer 
 	 * @param derivative, boolean check to determine whether or not the derivative 
 	 * of the sigmoid is to be used
 	 * @return new value after being passed through the sigmoid function
 	 */
-	private double sigmoidFunction(double dotProduct, boolean derivative) {
+	private double sigmoidFunction(double input, boolean derivative) {
 
-		/* if the derivative needs to be used, the value of the sigmoid of the dot product
-		   is retrieved, and then passed into the derived sigmoid function */
-		return derivative ? dotProduct * (1 - dotProduct) : (1 / (1 + Math.exp(-dotProduct)));
-
+		/* if the derivative is being called, return the sigmoid derivative of the dotProduct */
+		if (derivative)
+			return input * (1 - input);
+		else
+			/* if it's not the derivative, it's the sigmoid transfer function */
+			return (1 / (1 + Math.exp(-input)));
 	}
 
 	/**
 	 * Finds the node with the highest probability in the current output layer;
 	 * the index of this node is the MLP's prediction for the current input
 	 * 
-	 * @param currentInput, the index of the current input layer
+	 * @param currentRow, the index of the current input layer
 	 * @return the index of the output node with the highest probability
 	 */
-	private int findHighestInOutput(int currentInput) {
+	private int getPredictedOutput(int currentRow) {
 
 		double currentHighest = -1.0;
 		double currentOutputVal;
@@ -413,7 +422,7 @@ public class MultilayerPerceptron {
 		/* loop through every node in the output layer */
 		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
 
-			currentOutputVal = outputLayer[currentInput][outputNode];
+			currentOutputVal = outputLayer[currentRow][outputNode];
 
 			/* find the node with the highest probability */
 			if (currentOutputVal > currentHighest) {

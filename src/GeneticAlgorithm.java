@@ -53,9 +53,7 @@ public class GeneticAlgorithm {
 			long endTime = System.nanoTime();
 			long totalTime = endTime - startTime;
 
-			double seconds = (double) totalTime / 1000000000.0;
-
-			System.out.println("Running time = " + totalTime + " nano seconds, " + seconds + " seconds");
+			System.out.println("Running time = " + totalTime + " nano seconds");
 		}
 
 		return percentCorrect;
@@ -100,8 +98,8 @@ public class GeneticAlgorithm {
 			gene = new int[GENE_LENGTH]; /* empty gene */
 
 			/* for every position in gene, generate a random number between 0 and 16 */
-			for (int genePos = 0; genePos < gene.length; genePos++)
-				gene[genePos] = (int) (Math.random() * 17);
+			for (int pos = 0; pos < gene.length; pos++)
+				gene[pos] = (int) (Math.random() * 17);
 
 			/* set position in population to the newly created gene */
 			population[currentGene] = gene;
@@ -130,7 +128,7 @@ public class GeneticAlgorithm {
 			/* generate a pseudo-row using the current section of the gene */
 			currentRow = getRow(gene, category);
 
-			/* loop through every 10 rows in the dataset, if the neareset neighbour in the current section
+			/* loop through every 10 rows in the dataset. If the nearest neighbour in the current section
 			 * matches the current category, the categorisation was correct */
 			for (int datasetSection = 0; datasetSection < dataset.length; datasetSection += 10) {
 				for (int datasetPos = datasetSection; datasetPos < datasetSection + 10; datasetPos++) {
@@ -371,21 +369,22 @@ public class GeneticAlgorithm {
 
 		double ratio; /* ratio for generating cross points */
 		int crossPoint1, crossPoint2; /* positions for the genes to crossover */
+		int startPoint = 0; /* the starting point for crossover */
 
 		/* loop through every two genes in the temporary population and create new genes from those two */
 		for (int populationPos = 0; populationPos < tempPopulation.length; populationPos += 2) {
 
 			/* generate a new ratio and the first cross point */
-			ratio = ((int) (Math.random() * 10)) / 10.0;
+			ratio = ((int) (Math.random() * 10.0)) / 10.0;
 			crossPoint1 = (int) (ratio * GENE_LENGTH);
 
 			/* generate a new ratio and the second cross point */
-			ratio = ((int) (Math.random() * 10)) / 10.0;
+			ratio = ((int) (Math.random() * 10.0)) / 10.0;
 			crossPoint2 = (int) (crossPoint1 + (ratio * (GENE_LENGTH - crossPoint1)));
 
 			/* use helper function to crossover the genes at the
 			   generated cross points and add them to the population */
-			crossoverGenesAndAddToPopulation(populationPos, 0, crossPoint1, crossPoint2, GENE_LENGTH);
+			crossoverAndAddToPopulation(populationPos, startPoint, crossPoint1, crossPoint2, GENE_LENGTH);
 		}
 	}
 
@@ -430,7 +429,7 @@ public class GeneticAlgorithm {
 
 				/* use helper function to crossover the genes at the
 				generated cross points and add them to the population */
-				crossoverGenesAndAddToPopulation(populationPos, currentSection, crossPoint1, crossPoint2,
+				crossoverAndAddToPopulation(populationPos, currentSection, crossPoint1, crossPoint2,
 						currentSection + maxCross);
 			}
 		}
@@ -446,7 +445,7 @@ public class GeneticAlgorithm {
 	 * @param crossPoint2, second crossover point
 	 * @param endPos, end position of the crossover
 	 */
-	private void crossoverGenesAndAddToPopulation(int populationPos, int startPos, int crossPoint1, int crossPoint2,
+	private void crossoverAndAddToPopulation(int populationPos, int startPos, int crossPoint1, int crossPoint2,
 			int endPos) {
 
 		/* new genes to be created from parent genes */
@@ -492,11 +491,12 @@ public class GeneticAlgorithm {
 	private int mutate(int element) {
 
 		double randomChance = Math.random() * 100; /* generate random number from 0 to 100 */
+		int featureValueMax = 17; /* the largest number that a feature value can be is 16, +1 for random num */
 
 		/* if the random number is less than or equal to the mutation rate,
 		 * the gene bit is mutated */
 		if (MUTATION_RATE >= randomChance)
-			element = (int) (Math.random() * 17);
+			element = (int) (Math.random() * featureValueMax);
 
 		return element;
 	}
@@ -510,6 +510,7 @@ public class GeneticAlgorithm {
 	private void mutate(int[] gene) {
 
 		double randomChance;
+		int featureValueMax = 17; /* the largest number that a feature value can be is 16, +1 for random num */
 
 		/* loop through every position in the gene */
 		for (int genePos = 0; genePos < gene.length; genePos++) {
@@ -520,7 +521,7 @@ public class GeneticAlgorithm {
 			/* if random number is less than or equal to the mutation rate,
 			 * the element at the current position is mutated */
 			if (MUTATION_RATE >= randomChance)
-				gene[genePos] = (int) (Math.random() * 17);
+				gene[genePos] = (int) (Math.random() * featureValueMax);
 		}
 	}
 

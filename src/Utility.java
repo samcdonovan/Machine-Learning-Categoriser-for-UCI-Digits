@@ -28,7 +28,7 @@ public class Utility {
 
 		String line = "", delimiter = ","; /* csv files are delimited by commas */
 		String[] tempArray;
-		int[] rowOfData; /* there are 65 data points in each row */
+		int[] rowOfData; /* array to store each row of data */
 
 		int lineCount = 0;
 		int[][] dataset = new int[lineCount][];
@@ -142,8 +142,8 @@ public class Utility {
 	 * number of iterations. Used for parameter experimenting (see report), can test
 	 * either the GA or the MLP.
 	 * 
-	 * @param dataset1, the first dataset to build the GA for
-	 * @param dataset2, the second dataset to build the GA for
+	 * @param dataset1, the first dataset to run the algorithms for
+	 * @param dataset2, the second dataset to run the algorithms for
 	 */
 	public static void averageAccuracy(int[][] dataset1, int[][] dataset2) {
 
@@ -157,6 +157,7 @@ public class Utility {
 
 		GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
 		MultilayerPerceptron multilayerPerceptron = new MultilayerPerceptron();
+
 		/* loops for the specified number of iterations */
 		for (int currentIteration = 0; currentIteration < numIterations; currentIteration++) {
 
