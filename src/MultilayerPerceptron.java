@@ -102,7 +102,6 @@ public class MultilayerPerceptron {
 		/* set all output biases to 0 */
 		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++)
 			outputBias[outputNode] = 0.0;
-
 	}
 
 	/**
@@ -122,23 +121,27 @@ public class MultilayerPerceptron {
 		/* loop through every hidden node in the MLP */
 		for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
 
-			/* get the weighted sum for */
+			/* get the weighted sum to passed into the sigmoid function at the current hidden node */
 			weightedSum = getWeightedSum(inputToHiddenWeights, hiddenNode, dataset[currentInput].length - 1,
 					dataset[currentInput]);
 
 			weightedSum += hiddenBias[hiddenNode]; /* add hidden bias to the weighted sum */
 
+			/* pass the weighted sum into the sigmoid transfer function (not derivative) */
 			hiddenLayer[currentInput][hiddenNode] = sigmoidFunction(weightedSum, !derivative);
 
 		}
 
 		/* loop through every output node */
 		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
+
+			/* get the weighted sum to passed into the sigmoid function at the current output node */
 			weightedSum = getWeightedSum(hiddenToOutputWeights, outputNode, NUM_HIDDEN, hiddenLayer[currentInput],
 					forwardPropagate);
 
 			weightedSum += outputBias[outputNode]; /* add output bias to the weighted sum */
 
+			/* pass the weighted sum into the sigmoid transfer function (not derivative) */
 			outputLayer[currentInput][outputNode] = sigmoidFunction(weightedSum, !derivative);
 
 		}
@@ -177,9 +180,9 @@ public class MultilayerPerceptron {
 				/* update mean squared error */
 				meanSquaredError += Math.pow(1 - outputLayer[currentInput][actualOutput], 2);
 			}
-			
+
 			meanSquaredError = meanSquaredError / NUM_INPUTS * 2;
-			
+
 		} while (meanSquaredError > ERROR_THRESHOLD && numIterations < ITERATIONS);
 
 	}
@@ -318,7 +321,7 @@ public class MultilayerPerceptron {
 	 */
 	private double getWeightedSum(double[][] weights, int currentNode, int numNodes, double[] inputs, boolean forward) {
 		double weightedSum = 0.0;
-	
+
 		/* if it is forward propagation, use the nodes in the previous layer */
 		if (forward)
 			for (int nodeInPrevLayer = 0; nodeInPrevLayer < numNodes; nodeInPrevLayer++)
@@ -331,6 +334,7 @@ public class MultilayerPerceptron {
 
 		return weightedSum;
 	}
+
 	/**
 	 * Calculates the weighted sum for inputs that are int (as opposed to double)
 	 * 
@@ -342,12 +346,12 @@ public class MultilayerPerceptron {
 	 */
 	private double getWeightedSum(double[][] weights, int currentNode, int numNodes, int[] inputs) {
 		double weightedSum = 0.0;
-		
+
 		/* for every node in the next layer, multiple its value by the weight from 
 		   that layer to the current node */
-		for (int nodeInNextLayer = 0; nodeInNextLayer < numNodes; nodeInNextLayer++) 
+		for (int nodeInNextLayer = 0; nodeInNextLayer < numNodes; nodeInNextLayer++)
 			weightedSum += weights[nodeInNextLayer][currentNode] * inputs[nodeInNextLayer];
-		
+
 		return weightedSum;
 	}
 

@@ -100,10 +100,6 @@ public class Utility {
 		return Math.sqrt(sum);
 	}
 
-	public static void twoFold() {
-
-	}
-
 	/**
 	 * Calculates the percentage of correct categorisations, rounds it to 2 d.p and
 	 * then prints these values to the console.
@@ -113,13 +109,13 @@ public class Utility {
 	 * @param firstDatasetLength, the length of the first dataset
 	 * @param secondDatasetLength, the length of the second dataset
 	 */
-	public static void calculatePercentage(int firstFoldTotal, int secondFoldTotal, int firstDatasetLength,
+	public static double calculatePercentage(int firstFoldTotal, int secondFoldTotal, int firstDatasetLength,
 			int secondDatasetLength) {
-		
+
 		/* print the total correct categorisations from each fold */
 		System.out.println("First fold : " + firstFoldTotal + "/" + firstDatasetLength);
 		System.out.println("Second fold : " + secondFoldTotal + "/" + secondDatasetLength);
-		
+
 		/* add fold totals together to get the total number of correct categorisations */
 		int totalCorrect = firstFoldTotal + secondFoldTotal;
 		int totalDatasetLength = firstDatasetLength + secondDatasetLength;
@@ -133,6 +129,8 @@ public class Utility {
 		/* print the total number of correct categorisations and its percentage (the full percentage and to 2 d.p.) */
 		System.out.println("\nTotal correct: " + totalCorrect + "/" + (firstDatasetLength + secondDatasetLength) + " = "
 				+ percentageRounded + "% (" + percentageCorrect + "%)");
+		
+		return percentageCorrect;
 	}
 
 }
