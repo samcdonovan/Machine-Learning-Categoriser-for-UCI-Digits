@@ -504,4 +504,36 @@ public class GeneticAlgorithm {
 		}
 	}
 
+	/**
+	 * Calculates the average accuracy after running two fold tests for a specified 
+	 * number of iterations. Used for parameter experimenting (see report)
+	 * 
+	 * @param dataset1, the first dataset to build the GA for
+	 * @param dataset2, the second dataset to build the GA for
+	 */
+	private void averageAccuracy(int[][] dataset1, int[][] dataset2) {
+
+		/* 20 iterations were chosen to get an average accuracy because the running time 
+		 * becomes too long for larger numbers, and this still provides an insight into the effectiveness
+		 * of different parameters */
+		int numIterations = 20;
+		double totalPercentage = 0.0;
+		int firstFoldTotal, secondFoldTotal;
+
+		/* loops for the specified number of iterations */
+		for (int currentIteration = 0; currentIteration < numIterations; currentIteration++) {
+
+			/* get total correct categorisations for both folds */
+			firstFoldTotal = trainAndTestPopulation(dataset1, dataset2);
+			secondFoldTotal = trainAndTestPopulation(dataset2, dataset1);
+
+			/* calculate the percentage for this iteration and add to sum */
+			totalPercentage += Utility.calculatePercentage(firstFoldTotal, secondFoldTotal, dataset1.length,
+					dataset2.length);
+		}
+
+		/* get the average accuracy by dividing the summed accuracy by the number of iterations */
+		double averageAccuracy = totalPercentage / numIterations;
+		System.out.println("After " + numIterations + " iterations, avg. accuracy = " + averageAccuracy);
+	}
 }
