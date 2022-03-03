@@ -6,3 +6,9 @@ data
 
 /* .csv data files */
 *.csv
+
+/* zip folders */
+*.zip
+
+/* docx files */
+*.docx

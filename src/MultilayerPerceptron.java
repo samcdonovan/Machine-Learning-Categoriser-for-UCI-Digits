@@ -135,7 +135,8 @@ public class MultilayerPerceptron {
 		int numEpochs = 0;
 
 		double[][] errorGradients; /* 2D array to hold error gradients for hidden and output nodes */
-		int target, actualOutput;
+
+		int actualOutput;
 
 		/* do while loop to ensure it runs at least once */
 		do {
@@ -155,11 +156,9 @@ public class MultilayerPerceptron {
 
 				actualOutput = getPredictedOutput(currentRow); /* get the predicted output after forward propagation */
 
-				/* if the actual output is correct, target is 1, otherwise its 0 */
-				target = actualOutput == trainingSet[currentRow][NUM_FEATURE_VALS] ? 1 : 0;
-
-				/* update mean squared error */
-				meanSquaredError += Math.pow(target - outputLayer[currentRow][actualOutput], 2);
+				/* if there was an error with the prediciton, update the MSE */
+				if (actualOutput != trainingSet[currentRow][NUM_FEATURE_VALS])
+					meanSquaredError += Math.pow(1.0 - outputLayer[currentRow][actualOutput], 2);
 			}
 
 			/* take the mean of the squared error */

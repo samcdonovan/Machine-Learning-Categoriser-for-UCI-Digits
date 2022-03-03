@@ -17,13 +17,13 @@ public class NearestNeighbour {
 	 * @param dataset1, the first dataset
 	 * @param dataset2, the second dataset
 	 */
-	public static void twoFold(int[][] dataset1, int[][] dataset2) {
+	public void twoFold(int[][] dataset1, int[][] dataset2) {
 
 		/* get the total number of correct categorisations for the first fold */
-		int firstFoldTotal = NearestNeighbour.categorise(dataset1, dataset2);
+		int firstFoldTotal = categorise(dataset1, dataset2);
 
 		/* get the total number of correct categorisations for the second fold */
-		int secondFoldTotal = NearestNeighbour.categorise(dataset2, dataset1);
+		int secondFoldTotal = categorise(dataset2, dataset1);
 
 		/* print the total number of correct categorisations and its percentage (the full percentage and to 2 d.p.) */
 		Utility.calculatePercentage(firstFoldTotal, secondFoldTotal, dataset1.length, dataset2.length);
@@ -39,7 +39,7 @@ public class NearestNeighbour {
 	 * @param dataset2, data from the other dataset
 	 * @return number of correct categorisations
 	 */
-	private static int categorise(int[][] dataset1, int[][] dataset2) {
+	private int categorise(int[][] dataset1, int[][] dataset2) {
 
 		double min = Float.MAX_VALUE; /* current minimum distance, initialised to INF */
 		double currentDist; /* current distance to compare to min */
