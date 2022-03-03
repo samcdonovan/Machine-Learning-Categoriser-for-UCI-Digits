@@ -42,8 +42,7 @@ public class GeneticAlgorithm {
 	}
 
 	/**
-	 * Helper function that trains the population on a training set,
-	 * then tests that population against the test set.
+	 * Trains the population on a training set, then tests that population against the test set.
 	 * 
 	 * @param trainSet, the training set to form the population on
 	 * @param testSet, the set to test the newly formed population on
