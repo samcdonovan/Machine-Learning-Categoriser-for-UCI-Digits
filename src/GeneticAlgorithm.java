@@ -27,13 +27,14 @@ public class GeneticAlgorithm {
 	 * 
 	 * @param dataset1, the first dataset
 	 * @param dataset2, the second dataset
+	 * @return the percentage of correct categorisations
 	 */
-	public void twoFold(int[][] dataset1, int[][] dataset2) {
+	public double twoFold(int[][] dataset1, int[][] dataset2) {
 
 		/* if the paramaters are currently being tested/experimented with, 
 		   start a timer for the algorithm. This is to measure running time */
 		long startTime;
-		if (Utility.PARAMATER_TESTING) {
+		if (Utility.GA_PARAMATER_TESTING) {
 			startTime = System.nanoTime(); /* start the timer */
 		}
 
@@ -44,10 +45,11 @@ public class GeneticAlgorithm {
 		int secondFoldTotal = trainAndTestPopulation(dataset2, dataset1);
 
 		/* print the total number of correct categorisations and its percentage (the full percentage and to 2 d.p.) */
-		Utility.calculatePercentage(firstFoldTotal, secondFoldTotal, dataset1.length, dataset2.length);
+		double percentCorrect = Utility.calculatePercentage(firstFoldTotal, secondFoldTotal, dataset1.length,
+				dataset2.length);
 
 		/* if the GA parameters are currently being tested, calculate running time of the algorithm */
-		if (Utility.PARAMATER_TESTING) {
+		if (Utility.GA_PARAMATER_TESTING) {
 			long endTime = System.nanoTime();
 			long totalTime = endTime - startTime;
 
@@ -56,6 +58,7 @@ public class GeneticAlgorithm {
 			System.out.println("Running time = " + totalTime + " nano seconds, " + seconds + " seconds");
 		}
 
+		return percentCorrect;
 	}
 
 	/**
@@ -521,36 +524,4 @@ public class GeneticAlgorithm {
 		}
 	}
 
-	/**
-	 * Calculates the average accuracy after running two fold tests for a specified 
-	 * number of iterations. Used for parameter experimenting (see report)
-	 * 
-	 * @param dataset1, the first dataset to build the GA for
-	 * @param dataset2, the second dataset to build the GA for
-	 */
-	private void averageAccuracy(int[][] dataset1, int[][] dataset2) {
-
-		/* 20 iterations were chosen to get an average accuracy because the running time 
-		 * becomes too long for larger numbers, and this still provides an insight into the effectiveness
-		 * of different parameters */
-		int numIterations = 20;
-		double totalPercentage = 0.0;
-		int firstFoldTotal, secondFoldTotal;
-
-		/* loops for the specified number of iterations */
-		for (int currentIteration = 0; currentIteration < numIterations; currentIteration++) {
-
-			/* get total correct categorisations for both folds */
-			firstFoldTotal = trainAndTestPopulation(dataset1, dataset2);
-			secondFoldTotal = trainAndTestPopulation(dataset2, dataset1);
-
-			/* calculate the percentage for this iteration and add to sum */
-			totalPercentage += Utility.calculatePercentage(firstFoldTotal, secondFoldTotal, dataset1.length,
-					dataset2.length);
-		}
-
-		/* get the average accuracy by dividing the summed accuracy by the number of iterations */
-		double averageAccuracy = totalPercentage / numIterations;
-		System.out.println("After " + numIterations + " iterations, avg. accuracy = " + averageAccuracy);
-	}
 }

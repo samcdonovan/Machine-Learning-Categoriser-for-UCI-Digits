@@ -2,7 +2,7 @@
 /**
  * MultilayerPerceptron.java:
  * MLP that uses a Sigmoid transfer/activation function and 
- * an MSE loss function. Achieves variable accuracy but
+ * an MSE loss function. Achieves in the range of 90% to 93% but
  * the best recorded is ~93.59%.
  * 
  * @author Samuel C. Donovan
@@ -13,10 +13,10 @@ public class MultilayerPerceptron {
 
 	static final int NUM_INPUTS = 2810; /* number of input features */
 	static final int NUM_FEATURE_VALS = 64; /* number of feature values for each input */
-	static final int NUM_HIDDEN = 50; /* number of hidden nodes */
+	static final int NUM_HIDDEN = 60; /* number of hidden nodes */
 	static final int NUM_OUTPUT = 10; /* number of output nodes */
 
-	static final int ITERATIONS = 500; /* maximum number of training iterations */
+	static final int ITERATIONS = 400; /* maximum number of training iterations */
 	static final double ERROR_THRESHOLD = 0.001; /* threshold for training error */
 
 	static final double LEARNING_RATE = 0.1; /* relatively low learning rate to avoid convergence */
@@ -36,9 +36,17 @@ public class MultilayerPerceptron {
 	 * 
 	 * @param dataset1, the first dataset
 	 * @param dataset2, the second dataset
+	 * @return the percentage of correct categorisations
 	 */
-	public void twoFold(int[][] dataset1, int[][] dataset2) {
-
+	public double twoFold(int[][] dataset1, int[][] dataset2) {
+	
+		/* if the paramaters are currently being tested/experimented with, 
+		   start a timer for the algorithm. This is to measure running time */
+		long startTime;
+		if (Utility.MLP_PARAMATER_TESTING) {
+			startTime = System.nanoTime(); /* start the timer */
+		}
+		
 		/* get total correct categorisations from first fold */
 		int firstFoldTotal = trainAndTestMLP(dataset1, dataset2);
 
@@ -46,8 +54,19 @@ public class MultilayerPerceptron {
 		int secondFoldTotal = trainAndTestMLP(dataset2, dataset1);
 
 		/* print the total number of correct categorisations and its percentage (the full percentage and to 2 d.p.) */
-		Utility.calculatePercentage(firstFoldTotal, secondFoldTotal, dataset1.length, dataset2.length);
+		double percentCorrect =  Utility.calculatePercentage(firstFoldTotal, secondFoldTotal, dataset1.length, dataset2.length);
+				
+		/* if the MLP parameters are currently being tested, calculate running time of the algorithm */
+		if (Utility.MLP_PARAMATER_TESTING) {
+			long endTime = System.nanoTime();
+			long totalTime = endTime - startTime;
 
+			double seconds = (double) totalTime / 1000000000.0;
+
+			System.out.println("Running time = " + totalTime + " nano seconds, " + seconds + " seconds");
+		}
+
+		return percentCorrect;
 	}
 
 	/**
@@ -209,31 +228,31 @@ public class MultilayerPerceptron {
 		boolean derivative = true;
 		boolean forwardPropagate = true;
 
-		//if (actual != category) {
-			/* loop through every node in the output layer */
-			for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
-				/* if the current node is equal to the category for this row of data,  */
-				target = outputNode == category ? 1 : 0;
+		// if (actual != category) {
+		/* loop through every node in the output layer */
+		for (int outputNode = 0; outputNode < NUM_OUTPUT; outputNode++) {
+			/* if the current node is equal to the category for this row of data,  */
+			target = outputNode == category ? 1 : 0;
 
-				/* calculate error gradient for the current output node using the sigmoid derivative */
-				outputErrors[outputNode] = (target - outputLayer[currentInput][outputNode]) * error
-						* sigmoidFunction(outputLayer[currentInput][outputNode], derivative);
-			}
+			/* calculate error gradient for the current output node using the sigmoid derivative */
+			outputErrors[outputNode] = (target - outputLayer[currentInput][outputNode]) * error
+					* sigmoidFunction(outputLayer[currentInput][outputNode], derivative);
+		}
 
-			/* loop through every node in the hidden layer */
-			for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
+		/* loop through every node in the hidden layer */
+		for (int hiddenNode = 0; hiddenNode < NUM_HIDDEN; hiddenNode++) {
 
-				/* calculate weighted sum of output error gradients multiplied by 
-				 * the weight of the current hidden node (connected to the corresponding output node) */
-				weightedSum = getWeightedSum(hiddenToOutputWeights, hiddenNode, NUM_OUTPUT, outputErrors,
-						!forwardPropagate);
+			/* calculate weighted sum of output error gradients multiplied by 
+			 * the weight of the current hidden node (connected to the corresponding output node) */
+			weightedSum = getWeightedSum(hiddenToOutputWeights, hiddenNode, NUM_OUTPUT, outputErrors,
+					!forwardPropagate);
 
-				/* calculate hidden error gradient by multiplying weighted sum by the sigmoid derivative */
-				hiddenErrors[hiddenNode] = weightedSum * error
-						* sigmoidFunction(hiddenLayer[currentInput][hiddenNode], derivative);
+			/* calculate hidden error gradient by multiplying weighted sum by the sigmoid derivative */
+			hiddenErrors[hiddenNode] = weightedSum * error
+					* sigmoidFunction(hiddenLayer[currentInput][hiddenNode], derivative);
 
-			}
-		//}
+		}
+		// }
 		/* return arrays containing the error gradients */
 		return new double[][] { outputErrors, hiddenErrors };
 	}

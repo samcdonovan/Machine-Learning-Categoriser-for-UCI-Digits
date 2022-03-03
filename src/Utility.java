@@ -13,8 +13,10 @@ import java.io.IOException;
  */
 public class Utility {
 
-	public static final boolean PARAMATER_TESTING = false;
-	
+	/* static variables for testing algorithms for accuracy and running time */
+	public static final boolean GA_PARAMATER_TESTING = false;
+	public static final boolean MLP_PARAMATER_TESTING = false;
+
 	/**
 	 * Reads data from file path and puts it into a 2D int array
 	 * 
@@ -129,10 +131,49 @@ public class Utility {
 		double percentageRounded = Math.round(percentageCorrect * 100.0) / 100.0;
 
 		/* print the total number of correct categorisations and its percentage (the full percentage and to 2 d.p.) */
-		System.out.println("\nTotal correct: " + totalCorrect + "/" + (firstDatasetLength + secondDatasetLength) + " = "
+		System.out.println("Total correct: " + totalCorrect + "/" + (firstDatasetLength + secondDatasetLength) + " = "
 				+ percentageRounded + "% (" + percentageCorrect + "%)");
-		
+
 		return percentageCorrect;
 	}
 
+	/**
+	 * Calculates the average accuracy after running two fold tests for a specified 
+	 * number of iterations. Used for parameter experimenting (see report), can test
+	 * either the GA or the MLP.
+	 * 
+	 * @param dataset1, the first dataset to build the GA for
+	 * @param dataset2, the second dataset to build the GA for
+	 */
+	public static void averageAccuracy(int[][] dataset1, int[][] dataset2) {
+
+		/* 20 iterations were chosen to get an average accuracy because the running time 
+		 * becomes too long for larger numbers, and this still provides an insight into the effectiveness
+		 * of different parameters */
+		int numIterations = 20;
+		double totalPercentage = 0.0;
+
+		double currentPercentage = 0.0;
+
+		GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
+		MultilayerPerceptron multilayerPerceptron = new MultilayerPerceptron();
+		/* loops for the specified number of iterations */
+		for (int currentIteration = 0; currentIteration < numIterations; currentIteration++) {
+
+			if (GA_PARAMATER_TESTING)
+				/* get total correct categorisations for both folds of the GA */
+				currentPercentage = geneticAlgorithm.twoFold(dataset1, dataset2);
+
+			else if (MLP_PARAMATER_TESTING)
+				/* get total correct categorisations for both folds of the MLP */
+				currentPercentage = multilayerPerceptron.twoFold(dataset1, dataset2);
+
+			/* calculate the percentage for this iteration and add to sum */
+			totalPercentage += currentPercentage;
+		}
+
+		/* get the average accuracy by dividing the summed accuracy by the number of iterations */
+		double averageAccuracy = totalPercentage / numIterations;
+		System.out.println("After " + numIterations + " iterations, avg. accuracy = " + averageAccuracy);
+	}
 }

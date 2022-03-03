@@ -10,7 +10,6 @@
  */
 public class NearestNeighbour {
 
-
 	/**
 	 * Main function that runs a two fold test using the Nearest Neighbour algorithm. 
 	 * Prints the total number of correct categorisations, as well as how accurate it was (as a percentage)
@@ -19,24 +18,16 @@ public class NearestNeighbour {
 	 * @param dataset2, the second dataset
 	 */
 	public static void twoFold(int[][] dataset1, int[][] dataset2) {
-		/* get total dataset size; both datasets combined */
-		int fullDatasetSize = dataset1.length + dataset2.length;
 
-		/* use both datasets to run a 2-fold test, returning the 
-		 * total number of correct categorisations from both folds */
-		int totalCorrect = NearestNeighbour.categorise(dataset1, dataset2)
-				+ NearestNeighbour.categorise(dataset2, dataset1);
+		/* get the total number of correct categorisations for the first fold */
+		int firstFoldTotal = NearestNeighbour.categorise(dataset1, dataset2);
 
-		double percentageCorrect;
+		/* get the total number of correct categorisations for the second fold */
+		int secondFoldTotal = NearestNeighbour.categorise(dataset2, dataset1);
 
-		/* check that dataset is not empty */
-		if (dataset1.length > 0 && dataset2.length > 0) {
-			percentageCorrect = ((double) totalCorrect / (double) fullDatasetSize) * 100;
+		/* print the total number of correct categorisations and its percentage (the full percentage and to 2 d.p.) */
+		Utility.calculatePercentage(firstFoldTotal, secondFoldTotal, dataset1.length, dataset2.length);
 
-			/* print the correct total and the calculated percentage of correct categorisations */
-			System.out.println("Total correct: " + totalCorrect + "/" + fullDatasetSize + " = "
-					+ Math.round(percentageCorrect * 100.0) / 100.0 + "% (" + percentageCorrect + "%)");
-		}
 	}
 
 	/**
